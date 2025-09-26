@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -88,6 +89,14 @@
             background-color: var(--color-surface-hover);
         }
         .profile-content-panel.hidden { display: none; }
+        /* Scroll Down Indicator Styles */
+        #scroll-down-fade {
+            transition: opacity 0.3s ease-in-out;
+        }
+        #scroll-down-fade.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="text-[var(--color-text-primary)] transition-colors duration-300">
@@ -108,6 +117,9 @@
                 <div class="mb-8 flex flex-row items-center gap-2 sm:gap-4">
                      <div class="relative flex-grow">
                         <input type="search" id="search-box" placeholder="Search topics..." class="w-full py-3 pl-10 pr-10 text-sm sm:text-base text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-secondary)]/70 bg-[var(--color-surface)] rounded-full border-2 border-[var(--color-border)]/50 focus:ring-4 focus:ring-blue-300 focus:border-blue-500 transition-all shadow-md">
+                        <button id="clear-search-btn" class="absolute inset-y-0 right-0 pr-3 sm:pr-4 hidden items-center cursor-pointer">
+                            <svg class="w-5 h-5 text-slate-400 hover:text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                       </button>
                     </div>
                      <button id="settings-btn" aria-label="Open settings" class="flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[var(--color-surface)] border-2 border-[var(--color-border)]/50 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-blue-500 dark:hover:text-blue-400 transition-colors shadow-sm hover:shadow-md">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -134,12 +146,324 @@
                          <div id="category-tabs" class="flex items-center gap-3 overflow-x-auto hide-scrollbar p-2 rounded-full glassmorphism"></div>
                          <div id="scroll-fade-indicator"></div>
                     </div>
-                    <div id="topic-list" class="space-y-8">
+                    <div id="topic-list" class="space-y-8" style="display: none;">
                         <!-- Content for Recent, Trending, Categories -->
                     </div>
                     <div id="recent-polls-section">
                          <div id="recent-polls-grid" class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-                            <!--TOPIC_LIST_PLACEHOLDER-->
+                            
+    <a class='topic-card rounded-2xl shadow-lg flex flex-col' data-topic-id='fYwvCE9xqDwvSiTCq9ii' href='/topics/og-fan-hit-or-overhyped?id=fYwvCE9xqDwvSiTCq9ii&category=Entertainment&subcategory=Movies'>
+        <div class="relative pt-[56.25%] rounded-t-2xl overflow-hidden">
+             <img src="https://www.sacnilk.com/image/bunnyimagenews.php?newsid=1000023512" alt="OG - Fan Hit or Overhyped?" class="absolute top-0 left-0 w-full h-full object-cover" loading="lazy">
+        </div>
+        <div class="p-4 flex-grow flex flex-col">
+            <div><span class="subcategory-tag">Movies</span></div>
+            <h3 class="font-bold text-lg mt-2">OG - Fan Hit or Overhyped?</h3>
+            <p class="topic-card-description text-sm text-[var(--color-text-secondary)] mt-2">Headlines screamed that OG collected ₹150+ crore on Day-1 worldwide. But trade trackers show only ₹55–60 crore gross. So, is this record real or just marketing hype?</p>
+        </div>
+        <div class="px-4 pb-4 border-t border-[var(--color-border)]/50 flex justify-between items-center mt-auto pt-3">
+            <div class="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+                <button class="like-button flex items-center gap-1.5 hover:text-red-500">
+                    <svg class="heart-outline w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    <svg class="heart-filled w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.247 22.247 0 01-2.644-2.437 24.362 24.362 0 01-1.644-2.296C1.025 6.42 2.342 4.148 4.793 4.148c1.393 0 2.68.723 3.432 1.855c.753-1.132 2.04-1.855 3.433-1.855c2.45 0 3.768 2.272 3.22 5.263c-.538 2.957-2.956 5.395-5.948 7.532a24.394 24.394 0 01-1.644 1.037z" /></svg>
+                    <span class="like-count font-medium">0</span>
+                </button>
+                <span class="flex items-center gap-1.5">
+                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>0</span>
+                </span>
+            </div>
+            <div class="text-sm font-bold text-[var(--color-primary-accent-text)] group">
+                Explore Now <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+            </div>
+        </div>
+    </a>
+    <a class='topic-card rounded-2xl shadow-lg flex flex-col' data-topic-id='Qyv70FFlgbdiFdKP6yDt' href='/topics/historic-defence-boost-india-signs-62-370-crore-deal-for-97-tejas-mk-1a-jets-with-hal?id=Qyv70FFlgbdiFdKP6yDt&category=Defense%20%26%20Security&subcategory=Make%20in%20India'>
+        <div class="relative pt-[56.25%] rounded-t-2xl overflow-hidden">
+             <img src="https://akm-img-a-in.tosshub.com/indiatoday/images/story/202509/tejas-jets-deal-signed-250626874-16x9_0.jpeg" alt="Historic Defence Boost: India Signs ₹62,370 Crore Deal for 97 Tejas Mk-1A Jets with HAL" class="absolute top-0 left-0 w-full h-full object-cover" loading="lazy">
+        </div>
+        <div class="p-4 flex-grow flex flex-col">
+            <div><span class="subcategory-tag">Make in India</span></div>
+            <h3 class="font-bold text-lg mt-2">Historic Defence Boost: India Signs ₹62,370 Crore Deal for 97 Tejas Mk-1A Jets with HAL</h3>
+            <p class="topic-card-description text-sm text-[var(--color-text-secondary)] mt-2">The Indian government has formalized a major contract with HAL for 97 Tejas Mk-1A fighter aircraft, marking one of the biggest defence deals for an indigenous platform and coinciding with the phasing out of the MiG-21 fleet. </p>
+        </div>
+        <div class="px-4 pb-4 border-t border-[var(--color-border)]/50 flex justify-between items-center mt-auto pt-3">
+            <div class="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+                <button class="like-button flex items-center gap-1.5 hover:text-red-500">
+                    <svg class="heart-outline w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    <svg class="heart-filled w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.247 22.247 0 01-2.644-2.437 24.362 24.362 0 01-1.644-2.296C1.025 6.42 2.342 4.148 4.793 4.148c1.393 0 2.68.723 3.432 1.855c.753-1.132 2.04-1.855 3.433-1.855c2.45 0 3.768 2.272 3.22 5.263c-.538 2.957-2.956 5.395-5.948 7.532a24.394 24.394 0 01-1.644 1.037z" /></svg>
+                    <span class="like-count font-medium">0</span>
+                </button>
+                <span class="flex items-center gap-1.5">
+                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>1</span>
+                </span>
+            </div>
+            <div class="text-sm font-bold text-[var(--color-primary-accent-text)] group">
+                Explore Now <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+            </div>
+        </div>
+    </a>
+    <a class='topic-card rounded-2xl shadow-lg flex flex-col' data-topic-id='5x7E9eTBZoZPk7ZpFgxC' href='/topics/will-adhira-redefine-indian-superhero-cinema?id=5x7E9eTBZoZPk7ZpFgxC&category=Entertainment&subcategory=Movies'>
+        <div class="relative pt-[56.25%] rounded-t-2xl overflow-hidden">
+             <img src="https://cdn.gulte.com/wp-content/uploads/2025/09/adhira-poster.jpg" alt="Will Adhira redefine Indian superhero cinema?" class="absolute top-0 left-0 w-full h-full object-cover" loading="lazy">
+        </div>
+        <div class="p-4 flex-grow flex flex-col">
+            <div><span class="subcategory-tag">Movies</span></div>
+            <h3 class="font-bold text-lg mt-2">Will Adhira redefine Indian superhero cinema?</h3>
+            <p class="topic-card-description text-sm text-[var(--color-text-secondary)] mt-2">The first look of Adhira, directed by Sharan Koppisetty and part of Prasanth Varma’s cinematic universe, has created buzz. With Kalyan Dasari as the hero and S.J. Suryah as the villain, can Adhira raise the bar for Indian superhero films?</p>
+        </div>
+        <div class="px-4 pb-4 border-t border-[var(--color-border)]/50 flex justify-between items-center mt-auto pt-3">
+            <div class="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+                <button class="like-button flex items-center gap-1.5 hover:text-red-500">
+                    <svg class="heart-outline w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    <svg class="heart-filled w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.247 22.247 0 01-2.644-2.437 24.362 24.362 0 01-1.644-2.296C1.025 6.42 2.342 4.148 4.793 4.148c1.393 0 2.68.723 3.432 1.855c.753-1.132 2.04-1.855 3.433-1.855c2.45 0 3.768 2.272 3.22 5.263c-.538 2.957-2.956 5.395-5.948 7.532a24.394 24.394 0 01-1.644 1.037z" /></svg>
+                    <span class="like-count font-medium">5</span>
+                </button>
+                <span class="flex items-center gap-1.5">
+                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>5</span>
+                </span>
+            </div>
+            <div class="text-sm font-bold text-[var(--color-primary-accent-text)] group">
+                Explore Now <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+            </div>
+        </div>
+    </a>
+    <a class='topic-card rounded-2xl shadow-lg flex flex-col' data-topic-id='sQjoq99LWkD8mddO9maB' href='/topics/is-calling-navratri-a-gstsaving-festival-a-meaningful-initiative-or-political-rhetoric?id=sQjoq99LWkD8mddO9maB&category=Indian%20Politics&subcategory=Economy%20%26%20Tax%20Reforms'>
+        <div class="relative pt-[56.25%] rounded-t-2xl overflow-hidden">
+             <img src="https://www.pmindia.gov.in/wp-content/uploads/2025/09/H20250921191756.jpg" alt="Is calling Navratri a 'GST‐Saving Festival' a meaningful initiative or political rhetoric?" class="absolute top-0 left-0 w-full h-full object-cover" loading="lazy">
+        </div>
+        <div class="p-4 flex-grow flex flex-col">
+            <div><span class="subcategory-tag">Economy & Tax Reforms</span></div>
+            <h3 class="font-bold text-lg mt-2">Is calling Navratri a 'GST‐Saving Festival' a meaningful initiative or political rhetoric?</h3>
+            <p class="topic-card-description text-sm text-[var(--color-text-secondary)] mt-2">Prime Minister Modi has described the first day of Navratri (22 Sept 2025) as the start of a 'GST Bachat Utsav' ("GST savings festival") in light of recent GST rate cuts and other fiscal reforms. The initiative is pitched as a step toward an Atmanirbhar Bharat, encouraging citizens to buy local ("swadeshi") products and promising savings for consumers across classes. This poll explores whether this is seen as a genuinely beneficial economic reform or more of a political gesture.</p>
+        </div>
+        <div class="px-4 pb-4 border-t border-[var(--color-border)]/50 flex justify-between items-center mt-auto pt-3">
+            <div class="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+                <button class="like-button flex items-center gap-1.5 hover:text-red-500">
+                    <svg class="heart-outline w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    <svg class="heart-filled w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.247 22.247 0 01-2.644-2.437 24.362 24.362 0 01-1.644-2.296C1.025 6.42 2.342 4.148 4.793 4.148c1.393 0 2.68.723 3.432 1.855c.753-1.132 2.04-1.855 3.433-1.855c2.45 0 3.768 2.272 3.22 5.263c-.538 2.957-2.956 5.395-5.948 7.532a24.394 24.394 0 01-1.644 1.037z" /></svg>
+                    <span class="like-count font-medium">4</span>
+                </button>
+                <span class="flex items-center gap-1.5">
+                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>6</span>
+                </span>
+            </div>
+            <div class="text-sm font-bold text-[var(--color-primary-accent-text)] group">
+                Explore Now <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+            </div>
+        </div>
+    </a>
+    <a class='topic-card rounded-2xl shadow-lg flex flex-col' data-topic-id='HqwdWDrrChFRtMz8sX39' href='/topics/biggbosstelugu9-shocking-week-2-elimination-manish-maryada-out?id=HqwdWDrrChFRtMz8sX39&category=Entertainment&subcategory=BiggBoss'>
+        <div class="relative pt-[56.25%] rounded-t-2xl overflow-hidden">
+             <img src="https://pbs.twimg.com/media/G1RqvYcbQAAtcix?format=jpg&name=large" alt="BiggBossTelugu9: Shocking Week 2 Elimination – Manish Maryada Out!" class="absolute top-0 left-0 w-full h-full object-cover" loading="lazy">
+        </div>
+        <div class="p-4 flex-grow flex flex-col">
+            <div><span class="subcategory-tag">BiggBoss</span></div>
+            <h3 class="font-bold text-lg mt-2">BiggBossTelugu9: Shocking Week 2 Elimination – Manish Maryada Out!</h3>
+            <p class="topic-card-description text-sm text-[var(--color-text-secondary)] mt-2">Bigg Boss Telugu 9 Week 2 ended with a big surprise today. Manish Maryada, the fun commoner from Agnipariksha, got evicted after low votes. He was in the bottom with Flora Saini and Priya Shetty. Nominated were Bharani Shankar, Flora Saini, Priya Shetty, Demon Pavan, Haritha Harish, and Suman Shetty. Suman got the most votes and is safe.</p>
+        </div>
+        <div class="px-4 pb-4 border-t border-[var(--color-border)]/50 flex justify-between items-center mt-auto pt-3">
+            <div class="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+                <button class="like-button flex items-center gap-1.5 hover:text-red-500">
+                    <svg class="heart-outline w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    <svg class="heart-filled w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.247 22.247 0 01-2.644-2.437 24.362 24.362 0 01-1.644-2.296C1.025 6.42 2.342 4.148 4.793 4.148c1.393 0 2.68.723 3.432 1.855c.753-1.132 2.04-1.855 3.433-1.855c2.45 0 3.768 2.272 3.22 5.263c-.538 2.957-2.956 5.395-5.948 7.532a24.394 24.394 0 01-1.644 1.037z" /></svg>
+                    <span class="like-count font-medium">4</span>
+                </button>
+                <span class="flex items-center gap-1.5">
+                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>0</span>
+                </span>
+            </div>
+            <div class="text-sm font-bold text-[var(--color-primary-accent-text)] group">
+                Explore Now <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+            </div>
+        </div>
+    </a>
+    <a class='topic-card rounded-2xl shadow-lg flex flex-col' data-topic-id='ATdlspmgycrJkBiF8CtO' href='/topics/rvnl-share-price-is-it-overvalued-or-still-a-buy?id=ATdlspmgycrJkBiF8CtO&category=Business%20%26%20Finance&subcategory=Stock%20Market'>
+        <div class="relative pt-[56.25%] rounded-t-2xl overflow-hidden">
+             <img src="https://akm-img-a-in.tosshub.com/businesstoday/images/story/201905/sensexfalling2_660_010819040004_052319031824.jpg" alt="RVNL Share Price: Is It Overvalued or Still a Buy?" class="absolute top-0 left-0 w-full h-full object-cover" loading="lazy">
+        </div>
+        <div class="p-4 flex-grow flex flex-col">
+            <div><span class="subcategory-tag">Stock Market</span></div>
+            <h3 class="font-bold text-lg mt-2">RVNL Share Price: Is It Overvalued or Still a Buy?</h3>
+            <p class="topic-card-description text-sm text-[var(--color-text-secondary)] mt-2">Rail Vikas Nigam Limited (RVNL) shares are trading near ₹362–₹366, down from a 52-week high of ₹549. With a high P/E of ~63×, analysts warn of potential downside, but strong government order flow could boost growth.</p>
+        </div>
+        <div class="px-4 pb-4 border-t border-[var(--color-border)]/50 flex justify-between items-center mt-auto pt-3">
+            <div class="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+                <button class="like-button flex items-center gap-1.5 hover:text-red-500">
+                    <svg class="heart-outline w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    <svg class="heart-filled w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.247 22.247 0 01-2.644-2.437 24.362 24.362 0 01-1.644-2.296C1.025 6.42 2.342 4.148 4.793 4.148c1.393 0 2.68.723 3.432 1.855c.753-1.132 2.04-1.855 3.433-1.855c2.45 0 3.768 2.272 3.22 5.263c-.538 2.957-2.956 5.395-5.948 7.532a24.394 24.394 0 01-1.644 1.037z" /></svg>
+                    <span class="like-count font-medium">2</span>
+                </button>
+                <span class="flex items-center gap-1.5">
+                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>7</span>
+                </span>
+            </div>
+            <div class="text-sm font-bold text-[var(--color-primary-accent-text)] group">
+                Explore Now <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+            </div>
+        </div>
+    </a>
+    <a class='topic-card rounded-2xl shadow-lg flex flex-col' data-topic-id='YpaIxjo13U7K4EH11GhC' href='/topics/pm-modi-to-lay-foundation-stone-for-nuclear-power-plant-121-lakh-crore-projects-in-rajasthan?id=YpaIxjo13U7K4EH11GhC&category=Society&subcategory=National%20Projects'>
+        <div class="relative pt-[56.25%] rounded-t-2xl overflow-hidden">
+             <img src="https://img.etimg.com/thumb/height-450,width-600,resizemode-4,imgsize-65374,msid-123960464/india-live-news-pm-modi-to-lay-foundation-stone-for-nuclear-power-plant-other-projects-worth-rs-1-21l-cr-in-rajasthan-on-sept-25.jpg" alt="PM Modi to Lay Foundation Stone for Nuclear Power Plant, ₹1.21 Lakh Crore Projects in Rajasthan" class="absolute top-0 left-0 w-full h-full object-cover" loading="lazy">
+        </div>
+        <div class="p-4 flex-grow flex flex-col">
+            <div><span class="subcategory-tag">National Projects</span></div>
+            <h3 class="font-bold text-lg mt-2">PM Modi to Lay Foundation Stone for Nuclear Power Plant, ₹1.21 Lakh Crore Projects in Rajasthan</h3>
+            <p class="topic-card-description text-sm text-[var(--color-text-secondary)] mt-2">Prime Minister Narendra Modi will lay the foundation stone for a major nuclear power plant and other projects worth ₹1.21 lakh crore in Rajasthan on September 25. These projects aim to boost energy production, infrastructure, and regional development.</p>
+        </div>
+        <div class="px-4 pb-4 border-t border-[var(--color-border)]/50 flex justify-between items-center mt-auto pt-3">
+            <div class="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+                <button class="like-button flex items-center gap-1.5 hover:text-red-500">
+                    <svg class="heart-outline w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    <svg class="heart-filled w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.247 22.247 0 01-2.644-2.437 24.362 24.362 0 01-1.644-2.296C1.025 6.42 2.342 4.148 4.793 4.148c1.393 0 2.68.723 3.432 1.855c.753-1.132 2.04-1.855 3.433-1.855c2.45 0 3.768 2.272 3.22 5.263c-.538 2.957-2.956 5.395-5.948 7.532a24.394 24.394 0 01-1.644 1.037z" /></svg>
+                    <span class="like-count font-medium">2</span>
+                </button>
+                <span class="flex items-center gap-1.5">
+                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>7</span>
+                </span>
+            </div>
+            <div class="text-sm font-bold text-[var(--color-primary-accent-text)] group">
+                Explore Now <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+            </div>
+        </div>
+    </a>
+    <a class='topic-card rounded-2xl shadow-lg flex flex-col' data-topic-id='77oss2rXVYBFF0g4cDJG' href='/topics/pakistansaudi-arabia-defence-pact-and-indias-response?id=77oss2rXVYBFF0g4cDJG&category=Geopolitics&subcategory=Diplomacy'>
+        <div class="relative pt-[56.25%] rounded-t-2xl overflow-hidden">
+             <img src="https://c.ndtvimg.com/2025-09/sf0sobak_mbs-sharif_625x300_18_September_25.jpg" alt="Pakistan–Saudi Arabia Defence Pact and India’s Response" class="absolute top-0 left-0 w-full h-full object-cover" loading="lazy">
+        </div>
+        <div class="p-4 flex-grow flex flex-col">
+            <div><span class="subcategory-tag">Diplomacy</span></div>
+            <h3 class="font-bold text-lg mt-2">Pakistan–Saudi Arabia Defence Pact and India’s Response</h3>
+            <p class="topic-card-description text-sm text-[var(--color-text-secondary)] mt-2">Pakistan and Saudi Arabia signed a defence pact to jointly respond to any attack on either nation. This strengthens Pakistan’s security position. India is monitoring the development as it could shift the regional balance and impact its strategic interests.</p>
+        </div>
+        <div class="px-4 pb-4 border-t border-[var(--color-border)]/50 flex justify-between items-center mt-auto pt-3">
+            <div class="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+                <button class="like-button flex items-center gap-1.5 hover:text-red-500">
+                    <svg class="heart-outline w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    <svg class="heart-filled w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.247 22.247 0 01-2.644-2.437 24.362 24.362 0 01-1.644-2.296C1.025 6.42 2.342 4.148 4.793 4.148c1.393 0 2.68.723 3.432 1.855c.753-1.132 2.04-1.855 3.433-1.855c2.45 0 3.768 2.272 3.22 5.263c-.538 2.957-2.956 5.395-5.948 7.532a24.394 24.394 0 01-1.644 1.037z" /></svg>
+                    <span class="like-count font-medium">1</span>
+                </button>
+                <span class="flex items-center gap-1.5">
+                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>0</span>
+                </span>
+            </div>
+            <div class="text-sm font-bold text-[var(--color-primary-accent-text)] group">
+                Explore Now <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+            </div>
+        </div>
+    </a>
+    <a class='topic-card rounded-2xl shadow-lg flex flex-col' data-topic-id='CbH5SfLItCH4RRyzRd7G' href='/topics/karan-johar-hails-teja-sajja-as-mirai-crosses-100-cr-worldwide?id=CbH5SfLItCH4RRyzRd7G&category=Entertainment&subcategory=Movies'>
+        <div class="relative pt-[56.25%] rounded-t-2xl overflow-hidden">
+             <img src="https://www.hindustantimes.com/ht-img/img/2025/09/17/550x309/Mirai_1758113612933_1758113613105.jpg" alt="Karan Johar Hails Teja Sajja as Mirai Crosses ₹100 Cr Worldwide" class="absolute top-0 left-0 w-full h-full object-cover" loading="lazy">
+        </div>
+        <div class="p-4 flex-grow flex flex-col">
+            <div><span class="subcategory-tag">Movies</span></div>
+            <h3 class="font-bold text-lg mt-2">Karan Johar Hails Teja Sajja as Mirai Crosses ₹100 Cr Worldwide</h3>
+            <p class="topic-card-description text-sm text-[var(--color-text-secondary)] mt-2">Filmmaker Karan Johar called Teja Sajja the "man of the moment" and celebrated the "magnificent" success of Mirai as it crossed ₹100 crore at the global box office, marking a major milestone for Telugu cinema.</p>
+        </div>
+        <div class="px-4 pb-4 border-t border-[var(--color-border)]/50 flex justify-between items-center mt-auto pt-3">
+            <div class="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+                <button class="like-button flex items-center gap-1.5 hover:text-red-500">
+                    <svg class="heart-outline w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    <svg class="heart-filled w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.247 22.247 0 01-2.644-2.437 24.362 24.362 0 01-1.644-2.296C1.025 6.42 2.342 4.148 4.793 4.148c1.393 0 2.68.723 3.432 1.855c.753-1.132 2.04-1.855 3.433-1.855c2.45 0 3.768 2.272 3.22 5.263c-.538 2.957-2.956 5.395-5.948 7.532a24.394 24.394 0 01-1.644 1.037z" /></svg>
+                    <span class="like-count font-medium">1</span>
+                </button>
+                <span class="flex items-center gap-1.5">
+                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>0</span>
+                </span>
+            </div>
+            <div class="text-sm font-bold text-[var(--color-primary-accent-text)] group">
+                Explore Now <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+            </div>
+        </div>
+    </a>
+    <a class='topic-card rounded-2xl shadow-lg flex flex-col' data-topic-id='ZlXO4jnWqW6Ndihw8lbF' href='/topics/mirais-day-4-box-office-a-true-blockbuster-or-just-weekend-hype?id=ZlXO4jnWqW6Ndihw8lbF&category=Entertainment&subcategory=Movies'>
+        <div class="relative pt-[56.25%] rounded-t-2xl overflow-hidden">
+             <img src="https://www.hindustantimes.com/ht-img/img/2025/09/15/550x309/Mirai_day_4_1757950264189_1757950280085.jpg" alt="Mirai's Day 4 Box Office: A True Blockbuster or Just Weekend Hype?" class="absolute top-0 left-0 w-full h-full object-cover" loading="lazy">
+        </div>
+        <div class="p-4 flex-grow flex flex-col">
+            <div><span class="subcategory-tag">Movies</span></div>
+            <h3 class="font-bold text-lg mt-2">Mirai's Day 4 Box Office: A True Blockbuster or Just Weekend Hype?</h3>
+            <p class="topic-card-description text-sm text-[var(--color-text-secondary)] mt-2">Teja Sajja and Manchu Manoj's action-fantasy film "Mirai" crossed the ₹50 crore mark in India on its fourth day. However, after a massive opening weekend, the film saw a significant 60-70% drop in collections on its first Monday, sparking debate about its long-term success.</p>
+        </div>
+        <div class="px-4 pb-4 border-t border-[var(--color-border)]/50 flex justify-between items-center mt-auto pt-3">
+            <div class="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+                <button class="like-button flex items-center gap-1.5 hover:text-red-500">
+                    <svg class="heart-outline w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    <svg class="heart-filled w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.247 22.247 0 01-2.644-2.437 24.362 24.362 0 01-1.644-2.296C1.025 6.42 2.342 4.148 4.793 4.148c1.393 0 2.68.723 3.432 1.855c.753-1.132 2.04-1.855 3.433-1.855c2.45 0 3.768 2.272 3.22 5.263c-.538 2.957-2.956 5.395-5.948 7.532a24.394 24.394 0 01-1.644 1.037z" /></svg>
+                    <span class="like-count font-medium">2</span>
+                </button>
+                <span class="flex items-center gap-1.5">
+                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>11</span>
+                </span>
+            </div>
+            <div class="text-sm font-bold text-[var(--color-primary-accent-text)] group">
+                Explore Now <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+            </div>
+        </div>
+    </a>
+    <a class='topic-card rounded-2xl shadow-lg flex flex-col' data-topic-id='WNu12lRrEHzC7D6EPc44' href='/topics/oppos-f31-series-is-the-pro-worth-10-000-more-than-the-standard-model?id=WNu12lRrEHzC7D6EPc44&category=Technology&subcategory=Smartphones'>
+        <div class="relative pt-[56.25%] rounded-t-2xl overflow-hidden">
+             <img src="https://images.timesnownews.com/thumb/msid-152804507,thumbsize-21294,width-1280,height-720,resizemode-75/152804507.jpg" alt="Oppo's F31 Series: Is the Pro+ Worth ₹10,000 More Than the Standard Model?" class="absolute top-0 left-0 w-full h-full object-cover" loading="lazy">
+        </div>
+        <div class="p-4 flex-grow flex flex-col">
+            <div><span class="subcategory-tag">Smartphones</span></div>
+            <h3 class="font-bold text-lg mt-2">Oppo's F31 Series: Is the Pro+ Worth ₹10,000 More Than the Standard Model?</h3>
+            <p class="topic-card-description text-sm text-[var(--color-text-secondary)] mt-2">Oppo has launched three new phones: the F31, F31 Pro, and F31 Pro+. While all models share a massive 7000mAh battery and a 50MP main camera, the Pro models feature upgraded chipsets and selfie cameras. This raises a key question: do these upgrades justify the significant price jump?</p>
+        </div>
+        <div class="px-4 pb-4 border-t border-[var(--color-border)]/50 flex justify-between items-center mt-auto pt-3">
+            <div class="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+                <button class="like-button flex items-center gap-1.5 hover:text-red-500">
+                    <svg class="heart-outline w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    <svg class="heart-filled w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.247 22.247 0 01-2.644-2.437 24.362 24.362 0 01-1.644-2.296C1.025 6.42 2.342 4.148 4.793 4.148c1.393 0 2.68.723 3.432 1.855c.753-1.132 2.04-1.855 3.433-1.855c2.45 0 3.768 2.272 3.22 5.263c-.538 2.957-2.956 5.395-5.948 7.532a24.394 24.394 0 01-1.644 1.037z" /></svg>
+                    <span class="like-count font-medium">2</span>
+                </button>
+                <span class="flex items-center gap-1.5">
+                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>1</span>
+                </span>
+            </div>
+            <div class="text-sm font-bold text-[var(--color-primary-accent-text)] group">
+                Explore Now <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+            </div>
+        </div>
+    </a>
+    <a class='topic-card rounded-2xl shadow-lg flex flex-col' data-topic-id='aishwarya-rais-lawsuit-a-necessary-stand-against-ai-misuse-or-a-futile-fight' href='/topics/aishwarya-rais-lawsuit-a-necessary-stand-against-ai-misuse-or-a-futile-fight?id=aishwarya-rais-lawsuit-a-necessary-stand-against-ai-misuse-or-a-futile-fight&category=Entertainment&subcategory=Celebrity-Rights'>
+        <div class="relative pt-[56.25%] rounded-t-2xl overflow-hidden">
+             <img src="https://static.toiimg.com/thumb/msid-123827248,imgsize-39724,width-400,height-225,resizemode-72/the-court-observed-that-the-misuse-of-aishwarya-rai-bachchans-persona-created-confusion-falsely-implied-endorsement-and-diluted-her-reputation-and-goodwill.jpg" alt="Aishwarya Rai's Lawsuit: A Necessary Stand Against AI Misuse or a Futile Fight?" class="absolute top-0 left-0 w-full h-full object-cover" loading="lazy">
+        </div>
+        <div class="p-4 flex-grow flex flex-col">
+            <div><span class="subcategory-tag">Celebrity-Rights</span></div>
+            <h3 class="font-bold text-lg mt-2">Aishwarya Rai's Lawsuit: A Necessary Stand Against AI Misuse or a Futile Fight?</h3>
+            <p class="topic-card-description text-sm text-[var(--color-text-secondary)] mt-2">With Aishwarya Rai Bachchan taking legal action against the misuse of her AI-morphed images, we ask if such lawsuits can truly protect a person's identity in the digital age.</p>
+        </div>
+        <div class="px-4 pb-4 border-t border-[var(--color-border)]/50 flex justify-between items-center mt-auto pt-3">
+            <div class="flex items-center gap-4 text-sm text-[var(--color-text-secondary)]">
+                <button class="like-button flex items-center gap-1.5 hover:text-red-500">
+                    <svg class="heart-outline w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    <svg class="heart-filled w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.653 16.915l-.005-.003-.019-.01a20.759 20.759 0 01-1.162-.682 22.045 22.045 0 01-2.582-1.9-22.247 22.247 0 01-2.644-2.437 24.362 24.362 0 01-1.644-2.296C1.025 6.42 2.342 4.148 4.793 4.148c1.393 0 2.68.723 3.432 1.855c.753-1.132 2.04-1.855 3.433-1.855c2.45 0 3.768 2.272 3.22 5.263c-.538 2.957-2.956 5.395-5.948 7.532a24.394 24.394 0 01-1.644 1.037z" /></svg>
+                    <span class="like-count font-medium">6</span>
+                </button>
+                <span class="flex items-center gap-1.5">
+                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span>26</span>
+                </span>
+            </div>
+            <div class="text-sm font-bold text-[var(--color-primary-accent-text)] group">
+                Explore Now <span class="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+            </div>
+        </div>
+    </a>
                          </div>
                     </div>
                 </div>
@@ -237,10 +561,14 @@
         </div>
     </div>
 
+    <!-- Scroll Down Indicator -->
+    <div id="scroll-down-fade" class="fixed bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[var(--color-bg)] to-transparent pointer-events-none z-40"></div>
+
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-auth.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, setDoc, deleteDoc, query, orderBy, increment } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, setDoc, deleteDoc, query, orderBy, increment, runTransaction } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore.js";
 
         document.addEventListener('DOMContentLoaded', () => {
             const firebaseConfig = {
@@ -271,9 +599,10 @@
                 dataReadyPromiseResolve = resolve;
             });
 
+            // FIXED: Moved all DOM element selections inside DOMContentLoaded
             const appContainer = document.getElementById('app-container');
             const recentPollsGrid = document.getElementById('recent-polls-grid');
-            const preRenderedCount = recentPollsGrid.children.length;
+            const preRenderedCount = recentPollsGrid ? recentPollsGrid.children.length : 0;
 
             const topicList = document.getElementById('topic-list');
             const categoryTabsContainer = document.getElementById('category-tabs');
@@ -292,6 +621,7 @@
             const fontResetBtn = document.getElementById('font-reset-btn');
             const fontIncreaseBtn = document.getElementById('font-increase-btn');
             const searchBox = document.getElementById('search-box');
+            const clearSearchBtn = document.getElementById('clear-search-btn');
             
             // Profile View Elements
             const mainContainer = document.getElementById('topic-selection-container');
@@ -307,6 +637,18 @@
             const authModalContent = document.getElementById('auth-modal-content');
             const authModalCloseBtn = document.getElementById('auth-modal-close-btn');
             const authModalSigninBtn = document.getElementById('auth-modal-signin-btn');
+
+            // Scroll Indicator
+            const scrollDownFade = document.getElementById('scroll-down-fade');
+            const mainContentArea = document.getElementById('main-content-area');
+
+            function debounce(func, delay) {
+                let timeout;
+                return function(...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), delay);
+                };
+            }
 
             function slugify(text) {
                 if (typeof text !== 'string') return 'untitled-topic';
@@ -657,45 +999,63 @@
                 }
             }
             
-             async function likeTopic(topic, buttonElement, unlikeCallback) {
+            async function likeTopic(topic, buttonElement, unlikeCallback) {
                 if (!auth.currentUser) {
                     openModal(authModalContainer, authModalContent);
                     return;
                 }
+                buttonElement.disabled = true;
                 const user = auth.currentUser;
                 const topicRef = doc(db, 'categories', topic.category, 'subcategories', topic.subcategory, 'topics', topic.id);
                 const userLikeRef = doc(db, 'users', user.uid, 'likes', topic.id);
-                const isLiked = userLikedTopics.has(topic.id);
                 
+                const isLiked = userLikedTopics.has(topic.id);
                 const countElement = buttonElement.querySelector('.like-count');
                 let currentCount = parseInt(countElement.textContent);
 
-                buttonElement.classList.toggle('liked');
+                // Optimistic UI update
                 if (isLiked) {
                     userLikedTopics.delete(topic.id);
-                    const newCount = Math.max(0, currentCount - 1);
-                    countElement.textContent = newCount;
-                    if(unlikeCallback) unlikeCallback(topic.id);
+                    countElement.textContent = Math.max(0, currentCount - 1);
                 } else {
                     userLikedTopics.add(topic.id);
                     countElement.textContent = currentCount + 1;
                 }
-                
+                buttonElement.classList.toggle('liked');
+
                 try {
-                    const incrementValue = increment(isLiked ? -1 : 1);
-                    const topicDataForLike = { title: topic.title, category: topic.category, subcategory: topic.subcategory, timestamp: new Date()};
-                    if (isLiked) {
-                        await updateDoc(topicRef, { likes: incrementValue });
-                        await deleteDoc(userLikeRef);
-                    } else {
-                        await updateDoc(topicRef, { likes: incrementValue });
-                        await setDoc(userLikeRef, topicDataForLike);
-                    }
+                    await runTransaction(db, async (transaction) => {
+                        const topicDoc = await transaction.get(topicRef);
+                        if (!topicDoc.exists()) {
+                            throw "Topic does not exist!";
+                        }
+
+                        const currentLikes = topicDoc.data().likes || 0;
+                        const topicDataForLike = { title: topic.title, category: topic.category, subcategory: topic.subcategory, timestamp: new Date()};
+
+                        if (isLiked) {
+                            transaction.update(topicRef, { likes: Math.max(0, currentLikes - 1) });
+                            transaction.delete(userLikeRef);
+                            if (unlikeCallback) unlikeCallback(topic.id, false);
+                        } else {
+                            transaction.update(topicRef, { likes: currentLikes + 1 });
+                            transaction.set(userLikeRef, topicDataForLike);
+                        }
+                    });
+
                 } catch (e) {
-                    console.error("Like failed: ", e);
-                     buttonElement.classList.toggle('liked');
-                     countElement.textContent = currentCount;
-                     isLiked ? userLikedTopics.add(topic.id) : userLikedTopics.delete(topic.id);
+                    console.error("Like failed, reverting UI: ", e);
+                    // Revert UI on error
+                    if (isLiked) {
+                        userLikedTopics.add(topic.id);
+                    } else {
+                        userLikedTopics.delete(topic.id);
+                    }
+                    countElement.textContent = currentCount;
+                    buttonElement.classList.toggle('liked');
+                    if (unlikeCallback) unlikeCallback(topic.id, true); // Pass a flag to indicate revert
+                } finally {
+                    buttonElement.disabled = false;
                 }
             }
 
@@ -760,9 +1120,25 @@
             applyInitialTheme();
             applyInitialFontSize();
             
-            searchBox.addEventListener('input', handleSearch);
+            searchBox.addEventListener('input', debounce(handleSearch, 300));
+            clearSearchBtn.addEventListener('click', () => {
+                searchBox.value = '';
+                handleSearch({ target: { value: '' } });
+                searchBox.blur(); // Dismiss keyboard
+            });
+
 
             function handleInitialSearch() {
+                // Priority 1: Check sessionStorage for a tag-click navigation
+                const sessionTag = sessionStorage.getItem('searchTag');
+                if (sessionTag) {
+                    searchBox.value = sessionTag;
+                    handleSearch({ target: { value: sessionTag } });
+                    sessionStorage.removeItem('searchTag'); // Clear after use
+                    return; // Stop here
+                }
+
+                // Priority 2: Fallback to checking URL parameters
                 const params = new URLSearchParams(window.location.search);
                 const searchQuery = params.get('search');
                 if (searchQuery) {
@@ -778,7 +1154,7 @@
                 const user = auth.currentUser;
                 if(user) {
                     profileViewPhoto.src = user.photoURL;
-                    profileViewName.textContent = user.displayName;
+                    profileUserName.textContent = user.displayName;
                     profileViewEmail.textContent = user.email;
                     
                     profileViewTabs.querySelectorAll('.profile-tab').forEach(t => {
@@ -1031,6 +1407,27 @@
             };
             categoryTabsContainer.addEventListener('scroll', manageScrollFade);
             new ResizeObserver(manageScrollFade).observe(categoryTabsContainer);
+
+            // Scroll Indicator Logic
+            const updateScrollFadeVisibility = () => {
+                const isScrollable = document.documentElement.scrollHeight > document.documentElement.clientHeight;
+                const isAtBottom = (window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 50;
+
+                if (isScrollable && !isAtBottom) {
+                    scrollDownFade.classList.remove('hidden');
+                } else {
+                    scrollDownFade.classList.add('hidden');
+                }
+            };
+
+            window.addEventListener('scroll', updateScrollFadeVisibility);
+            window.addEventListener('resize', updateScrollFadeVisibility);
+
+            const contentObserver = new ResizeObserver(() => {
+                updateScrollFadeVisibility();
+            });
+            contentObserver.observe(mainContentArea);
+
 
             fetchAndPrepareData();
             handleInitialSearch();
