@@ -1,0 +1,11 @@
+# Ignore the automatically generated build folder
+dist/
+
+# Ignore system files
+.DS_Store
+
+# Ignore secret keys
+.env
+
+# Ignore the huge toolbox folder
+node_modules/
