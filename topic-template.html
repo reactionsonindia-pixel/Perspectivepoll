@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Perspective Poll</title>
+
+    <!-- 
+      SERVER-SIDE TEMPLATE AREA FOR SOCIAL SHARING
+      
+      These meta tags have unique placeholders that will be replaced by your Netlify function.
+      This ensures that social media crawlers see the correct dynamic content.
+    -->
+    <meta property="og:title" content="__OG_TITLE__">
+    <meta property="og:description" content="__OG_DESCRIPTION__">
+    <meta property="og:image" content="__OG_IMAGE__">
+    <meta property="og:url" content="https://perspectivepoll.netlify.app/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="__OG_TITLE__">
+    <meta name="twitter:description" content="__OG_DESCRIPTION__">
+    <meta name="twitter:image" content="__OG_IMAGE__">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --color-bg: #f7f8fa;
+            --color-text-primary: #1a202c;
+            --color-text-secondary: #718096;
+            --color-surface: #ffffff;
+            --color-surface-secondary: #f8fafc; /* Slightly darker than bg for visibility */
+            --color-surface-hover: #f1f5f9;
+            --color-border: #cbd5e1; /* Made border slightly darker for contrast */
+            --color-border-hover: #94a3b8;
+            --color-primary-accent-text: #3b82f6;
+            --color-primary-accent-bg: #ddeafe;
+            --color-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        html.dark {
+            --color-bg: #1a202c;
+            --color-text-primary: #f7fafc;
+            --color-text-secondary: #a0aec0;
+            --color-surface: #2d3748;
+            --color-surface-secondary: #4a5568;
+            --color-surface-hover: #718096;
+            --color-border: #475569;
+            --color-border-hover: #94a3b8;
+            --color-primary-accent-text: #63b3ed;
+            --color-primary-accent-bg: #2b6cb0;
+            --color-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
+        }
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg);
+        }
+        h1, h2, h3 {
+            font-family: 'Lora', serif;
+        }
+        .poll-bar-fill {
+            transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .poll-section-card {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+        }
+        #poll-description {
+            font-family: 'Lora', serif;
+            font-size: 1.125rem;
+            line-height: 1.8;
+            color: var(--color-text-secondary);
+        }
+        .comment {
+            animation: fadeIn 0.5s ease-in-out;
+            border: 1px solid var(--color-border);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .like-button .heart-filled { display: none; }
+        .like-button.liked .heart-filled { display: inline-block; animation: heart-pop 0.3s ease-out; }
+        .like-button.liked .heart-outline { display: none; }
+        .like-button:disabled { cursor: not-allowed; opacity: 0.7; }
+        @keyframes heart-pop { 0% { transform: scale(0.8); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .theme-toggle-dot {
+            transition: transform 0.3s ease;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .expandable-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0, 1, 0, 1);
+        }
+        .expandable-content.show {
+            max-height: 1000px; /* Large enough value */
+            transition: max-height 1s ease-in-out;
+        }
+        #more-info-content-inner {
+            max-height: 40vh;
+            overflow-y: auto;
+        }
+        #more-info-icon {
+            transition: transform 0.3s ease-in-out;
+        }
+        #perspectives-grid {
+            scroll-snap-type: x mandatory;
+        }
+        .perspective-card-content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 5; /* Show up to 5 lines of summary */
+            -webkit-box-orient: vertical;  
+        }
+
+        #perspective-modal-container, #delete-modal-container { transition: opacity 0.3s ease-in-out; }
+        #perspective-modal-content, #delete-modal-content { transition: transform 0.3s ease-in-out; }
+        
+        .comment-thread[data-level="1"] { margin-left: 1.5rem; }
+        .comment-thread[data-level="2"] { margin-left: 3rem; }
+        .comment-thread[data-level="3"],
+        .comment-thread[data-level="4"],
+        .comment-thread[data-level="5"] { margin-left: 4.5rem; }
+        .reply-form { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.3s ease-out, opacity 0.3s ease-out; }
+        .reply-form.show { max-height: 200px; opacity: 1; }
+        .comment.deleted .comment-body { color: var(--color-text-secondary); font-style: italic; }
+
+        #comments-container {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .result-bar-wrapper {
+            position: relative;
+        }
+        .user-voted-result .poll-bar-fill {
+            box-shadow: 0 0 15px 3px rgba(59, 130, 246, 0.5);
+        }
+        .user-voted-result::after {
+            content: 'Your Vote';
+            position: absolute;
+            top: -1.5rem;
+            right: 0;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--color-primary-accent-text);
+            background-color: var(--color-primary-accent-bg);
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        html.dark .prose-invert h1,
+        html.dark .prose-invert h2,
+        html.dark .prose-invert h3,
+        html.dark .prose-invert p,
+        html.dark .prose-invert li,
+        html.dark .prose-invert strong {
+            color: var(--color-text-primary);
+        }
+        .scroll-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 9999px;
+            background-color: var(--color-surface);
+            box-shadow: var(--color-shadow-md);
+            border: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .scroll-arrow:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+        .scroll-arrow.left {
+            left: -1.25rem;
+        }
+        .scroll-arrow.right {
+            right: -1.25rem;
+        }
+    </style>
+</head>
+<body class="text-[var(--color-text-primary)] transition-colors duration-300">
+
+    <main id="poll-container" class="w-full max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-10">
+        <header class="w-full pb-4 border-b border-[var(--color-border)] flex justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <button onclick="history.back()" class="bg-[var(--color-surface-hover)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] font-semibold p-2 rounded-full transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                </button>
+                <div>
+                     <p id="breadcrumb-text" class="text-sm text-[var(--color-text-secondary)] font-medium">Back to Topics</p>
+                     <h1 id="poll-title" class="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] tracking-tight">Loading Topic...</h1>
+                </div>
+            </div>
+        </header>
+
+        <div id="poll-content-wrapper" class="space-y-8">
+            <div id="media-section" class="hidden rounded-2xl overflow-hidden">
+                <div class="flex items-center gap-4">
+                     <button id="media-toggle-button" class="flex-grow bg-[var(--color-surface-secondary)]/70 hover:bg-[var(--color-border)]/70 border border-[var(--color-border)] rounded-2xl p-3 text-[var(--color-text-primary)] font-semibold flex justify-center items-center gap-2 transition-all duration-300 group">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>
+                         <span id="media-toggle-text">View Media Gallery</span>
+                     </button>
+                     <button id="settings-btn" aria-label="Open settings" class="flex-shrink-0 w-12 h-12 rounded-2xl bg-[var(--color-surface)] border-2 border-[var(--color-border)]/50 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-blue-500 transition-colors shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                     </button>
+                 </div>
+                 <div id="image-gallery-container" class="relative mt-4">
+                     <div id="image-gallery" class="flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory"></div>
+                     <div id="image-fade-indicator" class="hidden absolute top-0 right-0 bottom-0 w-20 bg-gradient-to-l from-[var(--color-bg)] to-transparent pointer-events-none"></div>
+                 </div>
+            </div>
+
+            <div class="max-w-prose mx-auto poll-section-card">
+                 <p id="poll-description"></p>
+                 <div id="more-info-container" class="hidden w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl transition-all mt-6">
+                     <button id="more-info-toggle" class="w-full p-4 text-[var(--color-text-primary)] font-semibold flex justify-between items-center transition-colors duration-300 group">
+                         <div class="flex items-center gap-3">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                             <span id="more-info-text">Dive Deeper for More Context</span>
+                         </div>
+                         <svg id="more-info-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform" viewBox="0 0 20 20" fill="currentColor">
+                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                     </button>
+                     <div id="more-info-content" class="expandable-content">
+                         <div id="more-info-content-inner" class="prose prose-slate dark:prose-invert max-w-none px-4 pb-4 border-t border-[var(--color-border)] text-left text-[var(--color-text-secondary)]"></div>
+                     </div>
+                 </div>
+            </div>
+
+            <section id="perspectives-section" class="poll-section-card">
+                <h2 class="text-xl font-bold text-center tracking-tight">Different Perspectives</h2>
+                <div class="relative">
+                    <div id="perspectives-grid" class="mt-4 flex gap-6 overflow-x-auto hide-scrollbar pb-4 snap-x"></div>
+                    <button id="perspective-scroll-left" class="scroll-arrow left hidden"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg></button>
+                    <button id="perspective-scroll-right" class="scroll-arrow right hidden"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg></button>
+                </div>
+            </section>
+
+            <section id="vote-section" class="poll-section-card">
+                <h2 class="text-xl font-bold text-center tracking-tight mb-4">What's Your Take?</h2>
+                <div id="vote-buttons" class="flex flex-col sm:flex-row justify-center gap-4"></div>
+            </section>
+            
+            <section id="voted-info-section" class="hidden text-center space-y-4 pt-4">
+                <p class="text-[var(--color-text-secondary)] font-semibold">You voted for: <strong id="user-vote-text" class="text-blue-600 dark:text-blue-400"></strong></p>
+                <button id="change-vote-btn" class="bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] font-semibold py-2 px-5 rounded-full border border-[var(--color-border)]">Change Vote</button>
+            </section>
+
+            <section id="results-section" class="hidden space-y-5 poll-section-card">
+                 <h2 class="text-xl font-bold text-center tracking-tight">Live Poll Results</h2>
+                 <div id="results-container" class="space-y-4"></div>
+            </section>
+
+            <section id="author-pov-section" class="hidden poll-section-card">
+                <h3 class="font-bold text-lg text-center tracking-tight">My Point of View</h3>
+                <p id="author-pov-text" class="mt-2 text-center text-[var(--color-text-secondary)] italic"></p>
+            </section>
+
+            <section id="discussion-toggle-section" class="hidden text-center">
+                <button id="view-discussion-btn" class="bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-[var(--color-text-primary)] font-semibold py-3 px-6 rounded-full border border-[var(--color-border)] shadow-sm transition-all flex items-center gap-2 mx-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clip-rule="evenodd" /></svg>
+                    <span>View Discussion</span> (<span id="comment-count">0</span>)
+                </button>
+            </section>
+
+            <section id="comment-section" class="poll-section-card hidden">
+                <div id="open-discussion-prompt" class="hidden text-center mb-6 p-4 bg-[var(--color-primary-accent-bg)] rounded-lg">
+                    <p class="font-semibold text-[var(--color-primary-accent-text)]">This is an Open Discussion. Share your thoughts below!</p>
+                </div>
+                <h3 class="font-bold text-lg text-center tracking-tight mb-4">Discussion</h3>
+                <div id="comment-form-container">
+                    <textarea id="comment-input" class="w-full p-3 bg-transparent border-2 border-[var(--color-border)] rounded-lg" placeholder="Share your perspective..."></textarea>
+                    <div class="flex justify-end mt-2">
+                        <button id="post-comment-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg">Post Comment</button>
+                    </div>
+                </div>
+                <p id="comment-signin-prompt" class="hidden text-center text-[var(--color-text-secondary)] mt-4">Please <a href="#" id="comment-signin-link" class="text-indigo-600 hover:underline">sign in</a> to post a comment.</p>
+                <div id="comments-container" class="mt-6 space-y-4"></div>
+            </section>
+            
+            <div class="space-y-8 mt-8 border-t border-[var(--color-border)] pt-8">
+                <section id="references-section" class="hidden poll-section-card">
+                     <h3 class="font-bold text-lg text-center tracking-tight">References & Further Reading</h3>
+                     <div id="references-list" class="mt-4 flex flex-col items-center space-y-2 text-blue-600 dark:text-blue-400"></div>
+                </section>
+                <section id="hashtags-section" class="hidden poll-section-card">
+                    <h3 class="font-bold text-lg text-center tracking-tight">Related Topics</h3>
+                    <div id="hashtags-container" class="mt-4 flex flex-wrap items-center justify-center gap-2"></div>
+                </section>
+                <section id="share-section" class="hidden poll-section-card">
+                    <h3 class="font-bold text-lg text-center tracking-tight">Share This Poll</h3>
+                    <div class="mt-4 flex justify-center items-center gap-4">
+                        <a id="share-twitter" href="#" target="_blank" class="flex items-center justify-center w-12 h-12 bg-slate-800 text-white rounded-full"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg></a>
+                        <a id="share-facebook" href="#" target="_blank" class="flex items-center justify-center w-12 h-12 bg-indigo-600 text-white rounded-full"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path></svg></a>
+                        <a id="share-whatsapp" href="#" target="_blank" class="flex items-center justify-center w-12 h-12 bg-green-500 text-white rounded-full"><svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M16.75 13.96c.25.13.43.2.5.33.07.13.07.68-.33 1.36-.4.68-1.15 1.15-1.57 1.22-.42.07-1.07.2-1.9-.28-.83-.48-2.15-1.32-3.6-2.8-.27-.27-.5-1.02-.5-1.15s-.2-.2-.48-.48c-.28-.28-.48-.48-.48-.75s-.07-.42.07-.57.2-.28.33-.42.2-.2.28-.42.13-.2.2-.42c.07-.2.07-.42-.07-.57-.13-.13-.9-2.15-1.22-2.9-.33-.75-.68-1.02-.9-1.02s-.42-.07-.57-.07c-.13 0-.33 0-.5.07s-.42.2-.68.48c-.27.28-.9.9-1.02 2.15s.42 2.43.48 2.6c.07.13 1.82 3.17 4.43 4.3.6.28 1.22.48 1.64.6.83.27 1.22.2 1.64.07.48-.13 1.43-.57 1.64-.9.2-.33.2-.68.13-.9-.07-.2-.2-.28-.42-.42zM12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"></path></svg></a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODALS -->
+    <div id="auth-modal-container" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-[var(--color-surface)] rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center">
+            <h2 class="text-2xl font-bold">Sign in to Continue</h2>
+            <button id="google-signin-btn" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-full">Sign in with Google</button>
+            <button id="close-auth-modal-btn" class="mt-4 text-sm text-[var(--color-text-secondary)]">Cancel</button>
+        </div>
+    </div>
+
+    <div id="settings-modal-container" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-[var(--color-surface)] rounded-2xl shadow-2xl w-full max-w-sm p-8">
+            <h2 class="text-2xl font-bold border-b border-[var(--color-border)] pb-4 mb-6">Settings</h2>
+            <div class="space-y-6">
+                <div class="flex justify-between items-center">
+                    <span class="font-semibold">Theme</span>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <button id="theme-toggle-switch" class="relative inline-flex items-center h-6 rounded-full w-11 bg-slate-300 dark:bg-slate-600">
+                            <span class="theme-toggle-dot inline-block w-4 h-4 transform bg-white rounded-full"></span>
+                        </button>
+                        <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-semibold">Font Size</span>
+                    <div class="flex items-center gap-1 bg-[var(--color-surface-secondary)] border border-[var(--color-border)]/50 rounded-full shadow-sm p-1">
+                        <button id="font-decrease-btn" class="w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] transition-colors text-xs font-bold">A-</button>
+                        <button id="font-reset-btn" class="w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] transition-colors text-sm font-bold">A</button>
+                        <button id="font-increase-btn" class="w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] transition-colors text-base font-bold">A+</button>
+                    </div>
+                </div>
+            </div>
+             <button id="settings-done-btn" class="mt-8 w-full bg-indigo-600 text-white font-semibold py-2.5 rounded-lg">Done</button>
+        </div>
+    </div>
+    
+    <div id="perspective-modal-container" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 z-50">
+        <div id="perspective-modal-content" class="bg-[var(--color-surface)] rounded-2xl shadow-2xl w-full max-w-lg p-6 md:p-8 transform scale-95">
+            <div class="flex justify-between items-start border-b border-[var(--color-border)] pb-4 mb-4">
+                 <h2 id="perspective-modal-title" class="text-2xl font-bold"></h2>
+                 <button id="close-perspective-modal-btn" class="text-slate-400 hover:text-slate-600">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                 </button>
+            </div>
+            <div id="perspective-modal-body" class="prose prose-slate dark:prose-invert max-w-none text-[var(--color-text-secondary)] space-y-4 max-h-[60vh] overflow-y-auto"></div>
+            <button id="perspective-modal-done-btn" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-2.5 rounded-lg">Close</button>
+        </div>
+    </div>
+
+    <div id="delete-modal-container" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 z-50">
+        <div id="delete-modal-content" class="bg-[var(--color-surface)] rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center transform scale-95">
+            <h2 class="text-2xl font-bold text-[var(--color-text-primary)]">Confirm Deletion</h2>
+            <p id="delete-modal-text" class="text-[var(--color-text-secondary)] mt-2 mb-6"></p>
+            <div class="flex gap-4">
+                <button id="cancel-delete-btn" class="w-full bg-[var(--color-border)] text-[var(--color-text-primary)] font-semibold py-2.5 rounded-lg">Cancel</button>
+                <button id="confirm-delete-btn" class="w-full bg-red-600 text-white font-semibold py-2.5 rounded-lg">Delete</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 
+      FASTER LOADING IMPLEMENTATION: Data Island
+      The build script embeds the topic's data here.
+      This prevents the need for a client-side database fetch, making the page load instantly.
+    -->
+    <script id="topic-data" type="application/json">
+        __TOPIC_DATA_JSON__
+    </script>
+    
+    <!-- Updated to modern Firebase v9+ modular SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-auth.js";
+        import { getFirestore, collection, doc, getDoc, getDocs, runTransaction, onSnapshot, query, orderBy, serverTimestamp, addDoc, updateDoc, deleteDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore.js";
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const firebaseConfig = {
+              apiKey: "AIzaSyDU6kTkg1RasSDQyAr1MOXEyJj3dqcZ45k",
+              authDomain: "my-perspective-poll.firebaseapp.com",
+              projectId: "my-perspective-poll",
+              storageBucket: "my-perspective-poll.appspot.com",
+              messagingSenderId: "223184083932",
+              appId: "1:223184083932:web:1e216a3be5990c90710d19"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+
+            let currentTopic = null;
+            let currentTopicRef = null;
+            let commentsUnsubscribe = null;
+            let allComments = [];
+            let activeReplyFormId = null;
+            let votedTopics = {};
+            let userLikedComments = new Set();
+            
+            // UI Elements
+            const pollTitle = document.getElementById('poll-title');
+            const pollDescription = document.getElementById('poll-description');
+            const mediaSection = document.getElementById('media-section');
+            const mediaToggleButton = document.getElementById('media-toggle-button');
+            const mediaToggleText = document.getElementById('media-toggle-text');
+            const imageGalleryContainer = document.getElementById('image-gallery-container');
+            const imageGallery = document.getElementById('image-gallery');
+            const imageFadeIndicator = document.getElementById('image-fade-indicator');
+            const perspectivesGrid = document.getElementById('perspectives-grid');
+            const voteButtons = document.getElementById('vote-buttons');
+            const voteSection = document.getElementById('vote-section');
+            const votedInfoSection = document.getElementById('voted-info-section');
+            const userVoteText = document.getElementById('user-vote-text');
+            const changeVoteBtn = document.getElementById('change-vote-btn');
+            const resultsSection = document.getElementById('results-section');
+            const resultsContainer = document.getElementById('results-container');
+            const authorPovSection = document.getElementById('author-pov-section');
+            const commentSection = document.getElementById('comment-section');
+            const commentsContainer = document.getElementById('comments-container');
+            const commentInput = document.getElementById('comment-input');
+            const postCommentBtn = document.getElementById('post-comment-btn');
+            const commentSigninPrompt = document.getElementById('comment-signin-prompt');
+            const commentSigninLink = document.getElementById('comment-signin-link');
+            const authModalContainer = document.getElementById('auth-modal-container');
+            const googleSigninBtn = document.getElementById('google-signin-btn');
+            const closeAuthModalBtn = document.getElementById('close-auth-modal-btn');
+            const moreInfoContainer = document.getElementById('more-info-container');
+            const moreInfoToggle = document.getElementById('more-info-toggle');
+            const moreInfoContentInner = document.getElementById('more-info-content-inner');
+            const shareSection = document.getElementById('share-section');
+            const hashtagsSection = document.getElementById('hashtags-section');
+            const referencesSection = document.getElementById('references-section');
+            const deleteModalContainer = document.getElementById('delete-modal-container');
+
+            // --- SETTINGS UI ---
+            const settingsBtn = document.getElementById('settings-btn');
+            const settingsModalContainer = document.getElementById('settings-modal-container');
+            const settingsDoneBtn = document.getElementById('settings-done-btn');
+            const themeToggleSwitch = document.getElementById('theme-toggle-switch');
+            const fontDecreaseBtn = document.getElementById('font-decrease-btn');
+            const fontResetBtn = document.getElementById('font-reset-btn');
+            const fontIncreaseBtn = document.getElementById('font-increase-btn');
+
+            // --- DISCUSSION BUTTON UI ---
+            const discussionToggleSection = document.getElementById('discussion-toggle-section');
+            const viewDiscussionBtn = document.getElementById('view-discussion-btn');
+            const commentCount = document.getElementById('comment-count');
+
+            function getTopicDetailsFromURL() {
+                const params = new URLSearchParams(window.location.search);
+                return {
+                    id: params.get('id'),
+                    category: params.get('category'),
+                    subcategory: params.get('subcategory')
+                };
+            }
+            
+            function loadTopic() {
+                const dataElement = document.getElementById('topic-data');
+                try {
+                    const embeddedData = JSON.parse(dataElement.textContent);
+                    if (embeddedData && embeddedData.id) {
+                        console.log("Topic data loaded from embedded JSON.");
+                        currentTopic = embeddedData;
+                        
+                        if (currentTopic.timestamp) {
+                            currentTopic.timestamp = { toDate: () => new Date(currentTopic.timestamp) };
+                        }
+                        if (currentTopic.pollClosesAt) {
+                            currentTopic.pollClosesAt = { toDate: () => new Date(currentTopic.pollClosesAt) };
+                        }
+
+                        const { id, category, subcategory } = currentTopic;
+                        currentTopicRef = doc(db, 'categories', category, 'subcategories', subcategory, 'topics', id);
+                        
+                        renderTopic();
+                        updateVoteUI(); 
+                        setupCommentsListener();
+                        return;
+                    }
+                } catch (e) {
+                    console.warn("Could not parse embedded JSON, falling back to Firebase fetch.", e);
+                }
+
+                fetchTopicFromFirebase();
+            }
+
+            async function fetchTopicFromFirebase() {
+                console.log("Fetching topic data from Firebase as a fallback...");
+                const { id, category, subcategory } = getTopicDetailsFromURL();
+                if (!id || !category || !subcategory) {
+                    pollTitle.textContent = "Topic not found";
+                    document.getElementById('poll-content-wrapper').innerHTML = '<p class="text-center">Invalid URL. Please go back and select a topic.</p>';
+                    return;
+                }
+
+                currentTopicRef = doc(db, 'categories', category, 'subcategories', subcategory, 'topics', id);
+                
+                try {
+                    const docSnap = await getDoc(currentTopicRef);
+                    if (docSnap.exists()) {
+                        currentTopic = { id: docSnap.id, ...docSnap.data() };
+                        renderTopic();
+                        updateVoteUI(); 
+                        setupCommentsListener();
+                    } else {
+                        pollTitle.textContent = "Topic not found";
+                    }
+                } catch (error) {
+                    console.error("Firebase Error: Failed to fetch the topic.", error);
+                    pollTitle.textContent = "Could not load topic";
+                    document.getElementById('poll-content-wrapper').innerHTML = `<p class="text-center text-red-500">There was a problem loading this topic. It might have been moved or you may not have permission to view it. Please check the console for more details.</p>`;
+                }
+            }
+
+            function updateDocumentTitle(topic) {
+                const pageTitle = topic && topic.title ? `${topic.title} | Perspective Poll` : 'Perspective Poll Topic';
+                document.title = pageTitle;
+            }
+
+            function renderTopic() {
+                updateDocumentTitle(currentTopic);
+
+                pollTitle.textContent = currentTopic.title || "Untitled Topic";
+                pollDescription.textContent = currentTopic.description || "No description provided.";
+                
+                imageGallery.innerHTML = '';
+                if (currentTopic.media && currentTopic.media.length > 0) {
+                    mediaSection.classList.remove('hidden');
+                    imageGalleryContainer.classList.remove('hidden');
+                    mediaToggleText.textContent = 'Hide Media Gallery';
+                    
+                    currentTopic.media.forEach(item => {
+                        if (item.type === 'image' && item.url) {
+                            const imgContainer = document.createElement('div');
+                            imgContainer.className = "snap-start w-full sm:w-1/2 md:w-1/3 flex-shrink-0 h-64 rounded-lg shadow-md overflow-hidden bg-slate-200";
+                            const placeholderUrl = `https://placehold.co/400x300/e2e8f0/64748b?text=Image+Not+Found`;
+                            imgContainer.innerHTML = `<img src="${item.url}" alt="${currentTopic.title || 'Topic image'}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='${placeholderUrl}';">`;
+                            imageGallery.appendChild(imgContainer);
+                        } else if (item.type === 'video' && item.videoId) {
+                             const videoContainer = document.createElement('div');
+                            videoContainer.className = "snap-start w-full sm:w-1/2 md:w-1/3 flex-shrink-0 h-64 rounded-lg shadow-md overflow-hidden bg-black";
+                            videoContainer.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${item.videoId}" frameborder="0" allowfullscreen></iframe>`;
+                            imageGallery.appendChild(videoContainer);
+                        }
+                    });
+                    setTimeout(manageImageScrollFade, 0);
+                } else {
+                    mediaSection.classList.add('hidden');
+                }
+
+                if (currentTopic.moreInfo) {
+                    moreInfoContentInner.innerHTML = currentTopic.moreInfo;
+                    moreInfoContainer.classList.remove('hidden');
+                } else {
+                    moreInfoContainer.classList.add('hidden');
+                }
+
+                const isPoll = currentTopic.perspectives && Object.keys(currentTopic.perspectives).length > 0;
+                document.getElementById('open-discussion-prompt').classList.add('hidden');
+
+                if (isPoll) {
+                    document.getElementById('perspectives-section').classList.remove('hidden');
+                    perspectivesGrid.innerHTML = '';
+                    voteButtons.innerHTML = '';
+                    
+                    Object.keys(currentTopic.perspectives).sort().forEach(key => {
+                        const p = currentTopic.perspectives[key];
+                        
+                        const card = document.createElement('div');
+                        card.className = "w-[80%] sm:w-[45%] lg:w-[30%] flex-shrink-0 snap-start bg-[var(--color-surface-secondary)] border border-[var(--color-border)] rounded-xl p-5 flex flex-col";
+                        
+                        const readMoreButtonHTML = (p.text.length > 200 || p.details) ? `<div class="read-more-container mt-auto pt-2 self-start"><button onclick="window.openPerspectiveModal('${key}')" class="text-sm font-semibold text-blue-600 dark:text-blue-400">Read More</button></div>` : '';
+
+                        card.innerHTML = `
+                            <h3 class="font-bold text-lg text-${p.color}-600 dark:text-${p.color}-400">${key}: ${p.title}</h3>
+                            <div class="perspective-card-content mt-2 text-sm flex-grow">${p.text}</div>
+                            ${readMoreButtonHTML}
+                        `;
+                        perspectivesGrid.appendChild(card);
+
+                        const button = document.createElement('button');
+                        button.className = `w-full sm:w-auto flex-1 bg-${p.color}-600 text-white font-semibold py-3 px-6 rounded-lg`;
+                        button.textContent = `Vote for "${p.title}"`;
+                        button.onclick = () => castVote(key);
+                        voteButtons.appendChild(button);
+                    });
+                    
+                    setTimeout(managePerspectiveArrows, 100);
+
+                } else {
+                    document.getElementById('perspectives-section').classList.add('hidden');
+                    document.getElementById('vote-section').classList.add('hidden');
+                    document.getElementById('voted-info-section').classList.add('hidden');
+                    document.getElementById('results-section').classList.add('hidden');
+                    document.getElementById('open-discussion-prompt').classList.remove('hidden');
+                }
+                
+                if (currentTopic.authorPov) {
+                    document.getElementById('author-pov-text').textContent = currentTopic.authorPov;
+                }
+
+                updateShareLinks();
+                renderHashtags();
+                renderReferences();
+            }
+            
+            function toggleMediaGallery() {
+                const isHidden = imageGalleryContainer.classList.toggle('hidden');
+                mediaToggleText.textContent = isHidden ? 'View Media Gallery' : 'Hide Media Gallery';
+            }
+
+            function toggleMoreInfo() {
+                const content = document.getElementById('more-info-content');
+                const icon = document.getElementById('more-info-icon');
+                const text = document.getElementById('more-info-text');
+                const isVisible = content.classList.toggle('show');
+                
+                if (isVisible) {
+                    text.textContent = 'Show Less';
+                    icon.style.transform = 'rotate(180deg)';
+                    setTimeout(() => {
+                        moreInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                } else {
+                    text.textContent = 'Dive Deeper for More Context';
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            }
+            
+            function manageImageScrollFade() {
+                const isScrollable = imageGallery.scrollWidth > imageGallery.clientWidth;
+                if(isScrollable) {
+                    imageFadeIndicator.classList.remove('hidden');
+                    const scrollPercentage = imageGallery.scrollLeft / (imageGallery.scrollWidth - imageGallery.clientWidth);
+                    imageFadeIndicator.style.opacity = 1 - scrollPercentage;
+                } else {
+                     imageFadeIndicator.classList.add('hidden');
+                }
+            }
+
+            window.openPerspectiveModal = (perspectiveKey) => {
+                const perspective = currentTopic.perspectives[perspectiveKey];
+                document.getElementById('perspective-modal-title').innerHTML = `<span class="text-${perspective.color}-600 dark:text-${perspective.color}-400">${perspectiveKey}:</span> ${perspective.title}`;
+                
+                const modalBodyContent = `
+                    <p class="font-semibold text-base text-[var(--color-text-primary)]">${perspective.text}</p>
+                    ${perspective.details ? `<div class="mt-4 pt-4 border-t border-[var(--color-border)] prose prose-slate dark:prose-invert max-w-none">${perspective.details}</div>` : ''}
+                `;
+                document.getElementById('perspective-modal-body').innerHTML = modalBodyContent;
+
+                const modalContainer = document.getElementById('perspective-modal-container');
+                modalContainer.classList.remove('hidden');
+                setTimeout(() => {
+                    modalContainer.classList.remove('opacity-0');
+                    document.getElementById('perspective-modal-content').classList.remove('scale-95');
+                }, 10);
+            }
+
+            function closePerspectiveModal() {
+                const modalContainer = document.getElementById('perspective-modal-container');
+                modalContainer.classList.add('opacity-0');
+                document.getElementById('perspective-modal-content').classList.add('scale-95');
+                setTimeout(() => {
+                    modalContainer.classList.add('hidden');
+                }, 300);
+            }
+
+            function updateShareLinks() {
+                shareSection.classList.remove('hidden');
+                const url = window.location.href;
+                const text = `What's your take on "${currentTopic.title || 'this topic'}"? Vote now on Perspective Poll!`;
+                document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+                document.getElementById('share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+                document.getElementById('share-whatsapp').href = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`;
+            }
+
+            function renderHashtags() {
+                const hashtagsContainer = document.getElementById('hashtags-container');
+                hashtagsContainer.innerHTML = '';
+                if (currentTopic.tags && currentTopic.tags.length > 0) {
+                    hashtagsSection.classList.remove('hidden');
+                    currentTopic.tags.forEach(tag => {
+                        const tagEl = document.createElement('a');
+                        tagEl.href = `/index.html?search=${encodeURIComponent(tag)}`;
+                        tagEl.className = 'text-blue-600 bg-blue-100 hover:bg-blue-200 dark:text-blue-300 dark:bg-blue-800 text-sm font-semibold px-2.5 py-1 rounded-full';
+                        tagEl.textContent = `#${tag}`;
+                        hashtagsContainer.appendChild(tagEl);
+                    });
+                } else {
+                    hashtagsSection.classList.add('hidden');
+                }
+            }
+            
+            function renderReferences() {
+                const referencesList = document.getElementById('references-list');
+                referencesList.innerHTML = '';
+                 if (currentTopic.references && currentTopic.references.length > 0) {
+                    referencesSection.classList.remove('hidden');
+                    currentTopic.references.forEach(ref => {
+                        const link = document.createElement('a');
+                        link.href = ref.url;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        link.className = 'hover:underline flex items-center gap-1.5';
+                        link.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg><span>${ref.title}</span>`;
+                        referencesList.appendChild(link);
+                    });
+                } else {
+                    referencesSection.classList.add('hidden');
+                }
+            }
+            
+            const perspectiveScrollLeft = document.getElementById('perspective-scroll-left');
+            const perspectiveScrollRight = document.getElementById('perspective-scroll-right');
+
+            function managePerspectiveArrows() {
+                const isScrollable = perspectivesGrid.scrollWidth > perspectivesGrid.clientWidth;
+                if (!isScrollable) {
+                    perspectiveScrollLeft.classList.add('hidden');
+                    perspectiveScrollRight.classList.add('hidden');
+                    return;
+                }
+                const scrollLeft = perspectivesGrid.scrollLeft;
+                const maxScroll = perspectivesGrid.scrollWidth - perspectivesGrid.clientWidth;
+
+                perspectiveScrollLeft.classList.toggle('hidden', scrollLeft < 10);
+                perspectiveScrollRight.classList.toggle('hidden', scrollLeft > maxScroll - 10);
+            }
+
+            perspectiveScrollLeft.addEventListener('click', () => {
+                perspectivesGrid.scrollBy({ left: -320, behavior: 'smooth' });
+            });
+            perspectiveScrollRight.addEventListener('click', () => {
+                perspectivesGrid.scrollBy({ left: 320, behavior: 'smooth' });
+            });
+
+            perspectivesGrid.addEventListener('scroll', managePerspectiveArrows);
+            new ResizeObserver(managePerspectiveArrows).observe(perspectivesGrid);
+
+            document.getElementById('close-perspective-modal-btn').addEventListener('click', closePerspectiveModal);
+            document.getElementById('perspective-modal-done-btn').addEventListener('click', closePerspectiveModal);
+            mediaToggleButton.addEventListener('click', toggleMediaGallery);
+            moreInfoToggle.addEventListener('click', toggleMoreInfo);
+            imageGallery.addEventListener('scroll', manageImageScrollFade);
+            new ResizeObserver(manageImageScrollFade).observe(imageGallery);
+
+            function setupAuthListener() {
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        const votesSnapshot = await getDocs(collection(db, 'users', user.uid, 'votes'));
+                        votedTopics = {};
+                        votesSnapshot.forEach(doc => { votedTopics[doc.id] = doc.data().votedFor; });
+                        
+                        const likedCommentsSnapshot = await getDocs(collection(db, 'users', user.uid, 'likedComments'));
+                        userLikedComments.clear();
+                        likedCommentsSnapshot.forEach(doc => userLikedComments.add(doc.id));
+                    } else {
+                        votedTopics = {};
+                        userLikedComments.clear();
+                    }
+                    updateUIAfterAuth();
+                });
+            }
+
+            function updateUIAfterAuth() {
+                updateVoteUI();
+                const user = auth.currentUser;
+                commentSigninPrompt.classList.toggle('hidden', !!user);
+                commentInput.disabled = !user;
+                postCommentBtn.disabled = !user;
+                if (commentsUnsubscribe) {
+                    commentsUnsubscribe(); 
+                    setupCommentsListener();
+                }
+            }
+
+            function updateVoteUI() {
+                if (!currentTopic) return;
+                const isPoll = currentTopic.perspectives && Object.keys(currentTopic.perspectives).length > 0;
+                const hasAuthorPov = !!currentTopic.authorPov;
+                const userVote = votedTopics[currentTopic.id];
+
+                const showDiscussion = !isPoll || !!userVote;
+
+                voteSection.classList.toggle('hidden', !isPoll || !!userVote);
+                votedInfoSection.classList.toggle('hidden', !userVote);
+                resultsSection.classList.toggle('hidden', !userVote);
+                discussionToggleSection.classList.toggle('hidden', !showDiscussion);
+                authorPovSection.classList.toggle('hidden', !hasAuthorPov || !showDiscussion);
+
+                if (userVote) {
+                    userVoteText.textContent = `"${currentTopic.perspectives[userVote].title}"`;
+                    showResults();
+                }
+            }
+
+            changeVoteBtn.addEventListener('click', () => {
+                votedInfoSection.classList.add('hidden');
+                resultsSection.classList.add('hidden');
+                commentSection.classList.add('hidden');
+                discussionToggleSection.classList.add('hidden');
+                authorPovSection.classList.add('hidden');
+                voteSection.classList.remove('hidden');
+            });
+
+            async function castVote(voteKey) {
+                if (!auth.currentUser) {
+                    authModalContainer.classList.remove('hidden');
+                    return;
+                }
+                const user = auth.currentUser;
+                const { id } = getTopicDetailsFromURL();
+                const previousVote = votedTopics[id];
+
+                try {
+                    await runTransaction(db, async (transaction) => {
+                        const topicDoc = await transaction.get(currentTopicRef);
+                        if (!topicDoc.exists()) throw "Topic does not exist!";
+                        
+                        const currentPerspectives = topicDoc.data().perspectives;
+
+                        if (previousVote && previousVote !== voteKey) {
+                           currentPerspectives[previousVote].votes = Math.max(0, currentPerspectives[previousVote].votes - 1);
+                        }
+                        
+                        if (previousVote !== voteKey) {
+                             currentPerspectives[voteKey].votes += 1;
+                        }
+
+                        transaction.update(currentTopicRef, { perspectives: currentPerspectives });
+                        
+                        const userVoteRef = doc(db, 'users', user.uid, 'votes', id);
+                        transaction.set(userVoteRef, { 
+                            votedFor: voteKey, 
+                            title: currentTopic.title, 
+                            perspectiveText: currentTopic.perspectives[voteKey].title,
+                            timestamp: serverTimestamp() 
+                        });
+                        
+                        currentTopic.perspectives = currentPerspectives;
+                        votedTopics[id] = voteKey;
+                    });
+                    updateVoteUI();
+                    setTimeout(() => {
+                        document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 150);
+                } catch (error) {
+                    console.error("Error casting vote:", error);
+                }
+            }
+
+            function showResults() {
+                resultsContainer.innerHTML = '';
+                const perspectives = currentTopic.perspectives;
+                const totalVotes = Object.values(perspectives).reduce((sum, p) => sum + p.votes, 0);
+                const userVote = votedTopics[getTopicDetailsFromURL().id];
+
+
+                Object.keys(perspectives).forEach(key => {
+                    const p = perspectives[key];
+                    const percentage = totalVotes > 0 ? (p.votes / totalVotes) * 100 : 0;
+                    
+                    const resultEl = document.createElement('div');
+                    resultEl.className = 'result-bar-wrapper';
+                    if (key === userVote) {
+                        resultEl.classList.add('user-voted-result');
+                    }
+
+                    resultEl.innerHTML = `
+                        <div class="flex justify-between mb-1">
+                            <span class="font-semibold">${p.title}</span>
+                            <span>${p.votes} Votes (${percentage.toFixed(1)}%)</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-4">
+                            <div class="poll-bar-fill h-4 rounded-full bg-${p.color}-600" style="width: ${percentage}%;"></div>
+                        </div>
+                    `;
+                    resultsContainer.appendChild(resultEl);
+                });
+            }
+
+            function timeAgo(timestamp) {
+                if (!timestamp) return '';
+                const date = timestamp.toDate();
+                const now = new Date();
+                const seconds = Math.round((now - date) / 1000);
+                if (seconds < 30) return 'just now';
+                if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+                if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+                return date.toLocaleDateString();
+            }
+            
+            function setupCommentsListener() {
+                if (!currentTopicRef) return;
+                if (commentsUnsubscribe) commentsUnsubscribe(); 
+                const commentsQuery = query(collection(currentTopicRef, 'comments'), orderBy('timestamp', 'desc'));
+                
+                commentsUnsubscribe = onSnapshot(commentsQuery, 
+                    (snapshot) => {
+                        if (snapshot.metadata.hasPendingWrites) {
+                            return;
+                        }
+
+                        allComments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        
+                        const visibleComments = allComments.filter(comment => {
+                            return !comment.isDeleted || allComments.some(child => child.parentId === comment.id);
+                        });
+                        commentCount.textContent = visibleComments.length;
+
+                        renderAllComments();
+                    },
+                    (error) => {
+                        console.error("Firebase Error: Failed to listen for comment updates.", error);
+                        commentsContainer.innerHTML = `<p class="text-center text-red-500">Could not load comments due to an error.</p>`;
+                    }
+                );
+            }
+            
+            function pruneEmptyDeletedThreads(comments) {
+                if (!comments || comments.length === 0) return [];
+                const prunedChildren = comments.map(comment => {
+                    const prunedGrandchildren = pruneEmptyDeletedThreads(comment.children);
+                    return { ...comment, children: prunedGrandchildren };
+                });
+                return prunedChildren.filter(comment => !comment.isDeleted || (comment.isDeleted && comment.children.length > 0));
+            }
+
+            function renderAllComments() {
+                const commentsById = new Map(allComments.map(c => [c.id, { ...c, children: [] }]));
+                const rootComments = [];
+                allComments.forEach(c => {
+                    if (c.parentId && commentsById.has(c.parentId)) {
+                        commentsById.get(c.parentId).children.unshift(commentsById.get(c.id));
+                    } else {
+                        rootComments.push(commentsById.get(c.id));
+                    }
+                });
+
+                const prunedRootComments = pruneEmptyDeletedThreads(rootComments);
+                commentsContainer.innerHTML = '';
+
+                if (prunedRootComments.length === 0) {
+                     commentsContainer.innerHTML = '<p class="text-center text-sm text-[var(--color-text-secondary)]">Be the first to comment.</p>';
+                } else {
+                     prunedRootComments.forEach(comment => renderComment(comment, commentsContainer, 0));
+                }
+            }
+            
+            function renderComment(comment, container, level) {
+                const commentThread = document.createElement('div');
+                commentThread.className = 'comment-thread';
+                commentThread.dataset.level = level;
+
+                const isAuthor = auth.currentUser && auth.currentUser.uid === comment.authorId;
+                const isLiked = userLikedComments.has(comment.id);
+
+                const deleteBtn = isAuthor && !comment.isDeleted ? `<button onclick="window.openDeleteConfirmationModal('${comment.id}')" class="text-xs text-gray-500 hover:text-red-500">Delete</button>` : '';
+                const likeBtn = `<button onclick="window.likeComment(event, '${comment.id}')" class="like-button text-xs flex items-center gap-1 ${isLiked ? 'liked text-red-500' : 'text-gray-500 hover:text-red-500'}">
+                    <svg class="heart-outline w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    <svg class="heart-filled w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657 3.172 10.828a4 4 0 010-5.656z"/></svg>
+                    <span class="like-count">${comment.likes || 0}</span>
+                </button>`;
+                
+                let viewRepliesBtn = '';
+                if (comment.children.length > 0) {
+                    const replyText = comment.children.length === 1 ? 'reply' : 'replies';
+                    viewRepliesBtn = `<button onclick="window.toggleReplies(event, '${comment.id}')" class="text-xs font-semibold text-blue-600 dark:text-blue-400">View ${comment.children.length} ${replyText}</button>`;
+                }
+
+                const commentEl = document.createElement('div');
+                commentEl.className = `comment p-3 rounded-lg bg-[var(--color-surface-secondary)]`;
+                commentEl.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <img src="${comment.isDeleted ? 'https://placehold.co/40x40/e2e8f0/64748b?text=?' : comment.authorPhoto}" class="w-8 h-8 rounded-full">
+                        <div class="flex-grow">
+                            <p class="font-semibold text-sm">${comment.isDeleted ? '[deleted]' : comment.authorName}</p>
+                            <p class="comment-body mt-1 text-sm">${comment.text}</p>
+                            <div class="flex items-center gap-4 mt-2 text-xs">
+                                <span class="text-gray-400">${timeAgo(comment.timestamp)}</span>
+                                ${!comment.isDeleted ? `<button onclick="window.toggleReplyForm('${comment.id}')" class="text-gray-500 hover:text-gray-700">Reply</button>` : ''}
+                                ${!comment.isDeleted ? likeBtn : ''}
+                                ${deleteBtn}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const replyFormContainer = document.createElement('div');
+                replyFormContainer.id = `reply-form-${comment.id}`;
+                replyFormContainer.className = 'reply-form ml-11 mt-2';
+                
+                const repliesToggleContainer = document.createElement('div');
+                repliesToggleContainer.className = 'ml-11 mt-2';
+                repliesToggleContainer.innerHTML = viewRepliesBtn;
+
+                const repliesContainer = document.createElement('div');
+                repliesContainer.id = `replies-container-${comment.id}`;
+                repliesContainer.className = 'replies-container mt-4 space-y-4 hidden';
+                
+                commentThread.appendChild(commentEl);
+                commentThread.appendChild(repliesToggleContainer);
+                commentThread.appendChild(replyFormContainer);
+                commentThread.appendChild(repliesContainer);
+                container.appendChild(commentThread);
+
+                if (comment.children.length > 0) {
+                    comment.children.forEach(reply => renderComment(reply, repliesContainer, level + 1));
+                }
+            }
+
+            window.toggleReplies = (event, commentId) => {
+                const container = document.getElementById(`replies-container-${commentId}`);
+                const button = event.target;
+                const isHidden = container.classList.toggle('hidden');
+
+                const comment = allComments.find(c => c.id === commentId);
+                const replyCount = comment.children.length;
+                const replyText = replyCount === 1 ? 'reply' : 'replies';
+
+                if(isHidden) {
+                    button.textContent = `View ${replyCount} ${replyText}`;
+                } else {
+                    button.textContent = `Hide replies`;
+                }
+            };
+
+            window.toggleReplyForm = (commentId) => {
+                const previouslyActiveFormId = activeReplyFormId;
+                const mainCommentContainer = document.getElementById('comment-form-container');
+                
+                if (activeReplyFormId) {
+                    const oldForm = document.getElementById(activeReplyFormId);
+                    if (oldForm) {
+                        oldForm.classList.remove('show');
+                        oldForm.innerHTML = '';
+                    }
+                    activeReplyFormId = null;
+                }
+
+                if (previouslyActiveFormId !== `reply-form-${commentId}`) {
+                    mainCommentContainer.classList.add('hidden');
+                    const formContainer = document.getElementById(`reply-form-${commentId}`);
+                    formContainer.classList.add('show');
+                    formContainer.innerHTML = `
+                        <textarea class="w-full p-2 border rounded-md bg-[var(--color-surface)] text-[var(--color-text-primary)] border-[var(--color-border)]" placeholder="Write a reply..."></textarea>
+                        <div class="flex justify-end gap-2 mt-2">
+                            <button onclick="window.toggleReplyForm('${commentId}')" class="text-xs px-3 py-1 rounded-md bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)]">Cancel</button>
+                            <button onclick="window.postComment('${commentId}')" class="text-xs px-3 py-1 bg-indigo-600 text-white rounded-md">Reply</button>
+                        </div>
+                    `;
+                    activeReplyFormId = `reply-form-${commentId}`;
+                    formContainer.querySelector('textarea').focus();
+                } else {
+                    mainCommentContainer.classList.remove('hidden');
+                }
+            };
+            
+            window.postComment = async (parentId = null) => {
+                const inputEl = parentId ? document.querySelector(`#reply-form-${parentId} textarea`) : commentInput;
+                const text = inputEl.value.trim();
+                if (!text || !auth.currentUser) return;
+                
+                const user = auth.currentUser;
+                const { id, category, subcategory } = getTopicDetailsFromURL();
+
+                const commentData = {
+                    text,
+                    parentId,
+                    authorName: user.displayName,
+                    authorId: user.uid,
+                    authorPhoto: user.photoURL,
+                    timestamp: serverTimestamp(),
+                    likes: 0,
+                    isDeleted: false,
+                    topicId: id,
+                    topicTitle: currentTopic.title,
+                    category: category,
+                    subcategory: subcategory,
+                };
+
+                const newCommentRef = await addDoc(collection(currentTopicRef, 'comments'), commentData);
+                await setDoc(doc(db, 'users', user.uid, 'comments', newCommentRef.id), commentData);
+
+                inputEl.value = '';
+                if(parentId) window.toggleReplyForm(parentId);
+            };
+
+            window.likeComment = async (event, commentId) => {
+                const button = event.currentTarget;
+                if (!auth.currentUser) {
+                    authModalContainer.classList.remove('hidden');
+                    return;
+                }
+                button.disabled = true;
+
+                const user = auth.currentUser;
+                const commentRef = doc(currentTopicRef, 'comments', commentId);
+                const userLikeRef = doc(db, 'users', user.uid, 'likedComments', commentId);
+                
+                const isLiked = userLikedComments.has(commentId);
+                const countElement = button.querySelector('.like-count');
+                let currentCount = parseInt(countElement.textContent);
+
+                // Optimistic UI update
+                if (isLiked) {
+                    userLikedComments.delete(commentId);
+                    countElement.textContent = currentCount - 1;
+                } else {
+                    userLikedComments.add(commentId);
+                    countElement.textContent = currentCount + 1;
+                }
+                button.classList.toggle('liked');
+
+                try {
+                    const incrementValue = increment(isLiked ? -1 : 1);
+                    if (isLiked) {
+                        await updateDoc(commentRef, { likes: incrementValue });
+                        await deleteDoc(userLikeRef);
+                    } else {
+                        const commentDoc = await getDoc(commentRef);
+                        if (commentDoc.exists()) {
+                            await updateDoc(commentRef, { likes: incrementValue });
+                            await setDoc(userLikeRef, { 
+                                ...commentDoc.data(),
+                                timestamp: serverTimestamp()
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error("Like failed, reverting UI:", error);
+                    // Revert UI on error
+                    if (isLiked) {
+                        userLikedComments.add(commentId);
+                        countElement.textContent = currentCount;
+                    } else {
+                        userLikedComments.delete(commentId);
+                        countElement.textContent = currentCount;
+                    }
+                    button.classList.toggle('liked');
+                } finally {
+                    button.disabled = false;
+                }
+            };
+
+            function openDeleteModal() {
+                deleteModalContainer.classList.remove('hidden');
+                setTimeout(() => {
+                    deleteModalContainer.classList.remove('opacity-0');
+                    document.getElementById('delete-modal-content').classList.remove('scale-95');
+                }, 10);
+            }
+
+            function closeDeleteModal() {
+                deleteModalContainer.classList.add('opacity-0');
+                document.getElementById('delete-modal-content').classList.add('scale-95');
+                setTimeout(() => {
+                    deleteModalContainer.classList.add('hidden');
+                }, 300);
+            }
+
+            window.openDeleteConfirmationModal = (commentId) => {
+                const modalText = document.getElementById('delete-modal-text');
+                
+                modalText.textContent = "Are you sure you want to permanently delete this comment? This will also delete all of your replies within this thread.";
+                
+                document.getElementById('confirm-delete-btn').onclick = () => deleteComment(commentId);
+                openDeleteModal();
+            };
+            
+            document.getElementById('cancel-delete-btn').addEventListener('click', closeDeleteModal);
+
+            async function deleteComment(commentId) {
+                const user = auth.currentUser;
+                if (!user) return;
+
+                const commentToDelete = allComments.find(c => c.id === commentId);
+                if (!commentToDelete || commentToDelete.authorId !== user.uid) return;
+
+                const commentsToDelete = new Map();
+                let hasUnownedReplies = false;
+
+                function findDescendants(parentId) {
+                    const children = allComments.filter(c => c.parentId === parentId);
+                    for (const child of children) {
+                        if (child.authorId === user.uid) {
+                            commentsToDelete.set(child.id, child);
+                            findDescendants(child.id); 
+                        } else {
+                            hasUnownedReplies = true; 
+                        }
+                    }
+                }
+
+                findDescendants(commentId);
+
+                const promises = [];
+                
+                if (hasUnownedReplies) {
+                    const parentRef = doc(currentTopicRef, 'comments', commentId);
+                    promises.push(updateDoc(parentRef, { text: '[comment deleted]', isDeleted: true }));
+                } else {
+                    commentsToDelete.set(commentToDelete.id, commentToDelete);
+                }
+
+                for (const [id, comment] of commentsToDelete.entries()) {
+                    const commentRef = doc(currentTopicRef, 'comments', id);
+                    const userCommentRef = doc(db, 'users', comment.authorId, 'comments', id);
+                    promises.push(deleteDoc(commentRef));
+                    promises.push(deleteDoc(userCommentRef));
+                }
+
+                try {
+                    await Promise.all(promises);
+                } catch (error) {
+                    console.error("Error deleting comment thread:", error);
+                } finally {
+                    closeDeleteModal();
+                }
+            }
+
+
+            function signInWithGoogle() {
+                const provider = new GoogleAuthProvider();
+                signInWithPopup(auth, provider).then(() => {
+                    authModalContainer.classList.add('hidden');
+                }).catch(error => {
+                    console.error("Sign in error", error);
+                });
+            }
+
+            postCommentBtn.addEventListener('click', () => window.postComment(null));
+            commentSigninLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                authModalContainer.classList.remove('hidden');
+            });
+            googleSigninBtn.addEventListener('click', signInWithGoogle);
+            closeAuthModalBtn.addEventListener('click', () => authModalContainer.classList.add('hidden'));
+
+
+            // --- SETTINGS LOGIC ---
+            function openSettingsModal() { settingsModalContainer.classList.remove('hidden'); }
+            function closeSettingsModal() { settingsModalContainer.classList.add('hidden'); }
+
+            function applyInitialTheme() {
+                const isDark = localStorage.getItem('theme') === 'dark';
+                document.documentElement.classList.toggle('dark', isDark);
+                themeToggleSwitch.querySelector('.theme-toggle-dot').style.transform = isDark ? 'translateX(1.25rem)' : 'translateX(0)';
+            }
+
+            function handleThemeToggle() {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                themeToggleSwitch.querySelector('.theme-toggle-dot').style.transform = isDark ? 'translateX(1.25rem)' : 'translateX(0)';
+            }
+            
+            const FONT_SIZES = [12, 14, 16, 18, 20];
+            const DEFAULT_FONT_INDEX = 2;
+
+            function applyInitialFontSize() {
+                const savedSize = localStorage.getItem('fontSize');
+                document.documentElement.style.fontSize = `${savedSize || FONT_SIZES[DEFAULT_FONT_INDEX]}px`;
+            }
+
+            function changeFontSize(direction) {
+                 const currentSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+                let currentIndex = FONT_SIZES.findIndex(size => size === currentSize);
+                if (currentIndex === -1) currentIndex = DEFAULT_FONT_INDEX;
+
+                let newIndex = currentIndex + direction;
+                if (newIndex >= 0 && newIndex < FONT_SIZES.length) {
+                    const newSize = FONT_SIZES[newIndex];
+                    document.documentElement.style.fontSize = `${newSize}px`;
+                    localStorage.setItem('fontSize', newSize);
+                }
+            }
+             function resetFontSize() {
+                const defaultSize = FONT_SIZES[DEFAULT_FONT_INDEX];
+                document.documentElement.style.fontSize = `${defaultSize}px`;
+                localStorage.setItem('fontSize', defaultSize);
+            }
+
+            viewDiscussionBtn.addEventListener('click', () => {
+                discussionToggleSection.classList.add('hidden');
+                commentSection.classList.remove('hidden');
+                commentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+
+            settingsBtn.addEventListener('click', openSettingsModal);
+            settingsDoneBtn.addEventListener('click', closeSettingsModal);
+            themeToggleSwitch.addEventListener('click', handleThemeToggle);
+            fontDecreaseBtn.addEventListener('click', () => changeFontSize(-1));
+            fontResetBtn.addEventListener('click', resetFontSize);
+            fontIncreaseBtn.addEventListener('click', () => changeFontSize(1));
+
+            // Initial calls
+            setupAuthListener();
+            loadTopic();
+            applyInitialTheme();
+            applyInitialFontSize();
+        });
+    </script>
+</body>
+</html>
+
