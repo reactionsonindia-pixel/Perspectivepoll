@@ -3,424 +3,525 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Create Poll</title>
+    <title>Perspective Poll - Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore-compat.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .dynamic-card {
-            transition: all 0.2s ease-in-out;
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .perspective-group, .media-group, .reference-group {
+            transition: background-color 0.2s ease-in-out;
         }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800">
-
-    <!-- Login Panel -->
-    <div id="login-panel" class="fixed inset-0 bg-slate-200 flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-2xl shadow-lg text-center w-full max-w-sm">
-            <h2 class="text-2xl font-bold text-slate-900">Admin Access</h2>
-            <p class="text-slate-500 mt-2 mb-6">Please sign in to continue.</p>
-            <button id="google-signin-btn" class="w-full inline-flex justify-center items-center gap-3 rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">
+    <!-- Login View -->
+    <div id="login-container" class="flex items-center justify-center min-h-screen">
+        <div class="text-center bg-white p-10 rounded-2xl shadow-lg">
+            <h1 class="text-3xl font-extrabold text-slate-900">Admin Panel Login</h1>
+            <p class="text-slate-600 mt-2 mb-6">Please sign in to continue.</p>
+            <button id="admin-login-btn" class="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2">
                 <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.223,0-9.651-3.358-11.297-7.962l-6.571,4.819C9.656,39.663,16.318,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.988,36.586,44,30.861,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
                 Sign in with Google
             </button>
-            <p id="auth-error" class="text-red-500 text-sm mt-4 hidden"></p>
         </div>
     </div>
 
-    <!-- Admin Content -->
-    <div id="admin-panel-content" class="container mx-auto max-w-4xl p-4 sm:p-8 hidden">
-        <header class="mb-8 flex justify-between items-center">
-            <div>
-                <h1 class="text-4xl font-bold text-slate-900">Admin Panel</h1>
-                <p class="text-slate-500">Create a new poll topic.</p>
+    <div id="admin-container" class="container mx-auto p-4 md:p-8 hidden">
+        
+        <header class="flex justify-between items-center mb-10">
+            <div class="text-center flex-grow">
+                <h1 class="text-4xl font-extrabold text-slate-900">Admin Panel</h1>
+                <p class="text-slate-600 mt-2">Create and manage polls for Perspective Poll.</p>
             </div>
-            <button id="signout-btn" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">Sign Out</button>
+            <div id="admin-user-info" class="flex-shrink-0 text-right">
+                <!-- Admin info here -->
+            </div>
         </header>
 
-        <form id="poll-form" class="space-y-6 bg-white p-8 rounded-2xl shadow-lg">
-            
-            <!-- Main Details -->
-            <fieldset class="space-y-4">
-                <legend class="text-xl font-semibold mb-2 border-b pb-2">Main Details</legend>
-                <div>
-                    <label for="topicType" class="block text-sm font-medium text-slate-700">Topic Format</label>
-                    <select id="topicType" name="topicType" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="poll" selected>Poll with Perspectives</option>
-                        <option value="discussion">Open Discussion</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="category" class="block text-sm font-medium text-slate-700">Category</label>
-                    <input type="text" id="category" name="category" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="e.g., Technology">
-                </div>
-                <div>
-                    <label for="subcategory" class="block text-sm font-medium text-slate-700">Subcategory</label>
-                    <input type="text" id="subcategory" name="subcategory" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="e.g., Artificial Intelligence">
-                </div>
-                <div>
-                    <label for="title" class="block text-sm font-medium text-slate-700">Topic Title</label>
-                    <input type="text" id="title" name="title" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label for="description" class="block text-sm font-medium text-slate-700">Short Description</label>
-                    <textarea id="description" name="description" rows="3" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
-                </div>
-                 <div>
-                    <label for="moreInfo" class="block text-sm font-medium text-slate-700">Dive Deeper / More Info (Supports HTML)</label>
-                    <textarea id="moreInfo" name="moreInfo" rows="6" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Provide more context, history, or detailed explanations..."></textarea>
-                </div>
-            </fieldset>
-
-            <!-- Poll Timing -->
-            <fieldset id="poll-timing-fieldset" class="space-y-4">
-                <legend class="text-xl font-semibold mb-2 border-b pb-2">Poll Timing</legend>
-                <div class="relative flex items-start">
-                    <div class="flex h-5 items-center">
-                        <input id="set-closing-time" name="set-closing-time" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+        <!-- Content Creation/Editing Form -->
+        <div id="content-form-section" class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+            <h2 id="form-title" class="text-2xl font-bold text-slate-800 mb-6">Create New Poll</h2>
+            <form id="poll-form" class="space-y-6">
+                <input type="hidden" id="editing-poll-id">
+                <input type="hidden" id="editing-poll-path">
+                
+                <!-- Basic Info -->
+                <div class="border-b border-slate-200 pb-6">
+                    <h3 class="text-xl font-bold mb-4 text-slate-800">1. Basic Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="category" class="block text-sm font-medium text-slate-700">Category</label>
+                            <input type="text" id="category" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="subcategory" class="block text-sm font-medium text-slate-700">Subcategory</label>
+                            <input type="text" id="subcategory" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
                     </div>
-                    <div class="ml-3 text-sm">
-                        <label for="set-closing-time" class="font-medium text-slate-700">Set a closing time for this poll</label>
+                    <div class="mt-4">
+                        <label for="title" class="block text-sm font-medium text-slate-700">Poll Title</label>
+                        <input type="text" id="title" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div class="mt-4">
+                        <label for="description" class="block text-sm font-medium text-slate-700">Short Description</label>
+                        <textarea id="description" rows="3" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                    </div>
+                    <div class="mt-4">
+                        <label for="authorPov" class="block text-sm font-medium text-slate-700">Author's Point of View</label>
+                        <textarea id="authorPov" rows="3" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                    </div>
+                    <div class="mt-4">
+                        <label for="more-info" class="block text-sm font-medium text-slate-700">Dive Deeper / More Info (Optional, HTML allowed)</label>
+                        <textarea id="more-info" rows="5" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                    </div>
+                    <div class="mt-4">
+                        <label for="hashtags" class="block text-sm font-medium text-slate-700">Hashtags (comma-separated, no #)</label>
+                        <input type="text" id="hashtags" placeholder="e.g. IndianPolitics, Tech, Cricket" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div class="mt-4">
+                        <label for="poll-end-date" class="block text-sm font-medium text-slate-700">Poll End Date (Optional)</label>
+                        <input type="datetime-local" id="poll-end-date" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     </div>
                 </div>
-                <div id="closing-time-container" class="hidden">
-                    <label for="closing-time" class="block text-sm font-medium text-slate-700">Closing Date & Time</label>
-                    <input type="datetime-local" id="closing-time" name="closing-time" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                </div>
-            </fieldset>
 
-            <!-- Perspectives -->
-            <fieldset id="perspectives-fieldset">
-                <legend class="text-xl font-semibold mb-2 border-b pb-2">Perspectives</legend>
-                <div id="perspectives-container" class="space-y-4">
-                    <!-- Perspectives will be added here -->
+                <!-- Perspectives -->
+                <div id="perspectives-container" class="border-b border-slate-200 pb-6">
+                        <h3 class="text-xl font-bold mb-4 text-slate-800">2. Perspectives</h3>
+                        <!-- Perspectives will be added here -->
                 </div>
-                <button type="button" id="add-perspective-btn" class="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800">+ Add Perspective</button>
-            </fieldset>
+                <button type="button" id="add-perspective-btn" class="bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors">Add Perspective</button>
 
-            <!-- Additional Content -->
-            <fieldset class="space-y-4">
-                 <legend class="text-xl font-semibold mb-2 border-b pb-2">Additional Content</legend>
-                 <div>
-                    <label for="authorPov" class="block text-sm font-medium text-slate-700">Author's Point of View (Optional)</label>
-                    <input type="text" id="authorPov" name="authorPov" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="A brief, personal take on the topic.">
-                </div>
-                 <div>
-                    <label for="tags" class="block text-sm font-medium text-slate-700">Tags (comma-separated)</label>
-                    <input type="text" id="tags" name="tags" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="e.g., AI, ethics, technology, future">
-                </div>
-            </fieldset>
-
-            <!-- Media -->
-            <fieldset>
-                <legend class="text-xl font-semibold mb-2 border-b pb-2">Media (Images/Videos)</legend>
-                <div id="media-container" class="space-y-4">
+                <!-- Media Section -->
+                <div id="media-container" class="border-b border-slate-200 pb-6">
+                    <h3 class="text-xl font-bold mb-4 text-slate-800">3. Media (Optional)</h3>
                     <!-- Media items will be added here -->
                 </div>
-                <button type="button" id="add-media-btn" class="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800">+ Add Media Item</button>
-            </fieldset>
+                <button type="button" id="add-media-btn" class="bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors">Add Media</button>
 
-            <!-- References -->
-            <fieldset>
-                <legend class="text-xl font-semibold mb-2 border-b pb-2">References & Further Reading</legend>
-                <div id="references-container" class="space-y-4">
-                    <!-- References will be added here -->
+                <!-- References Section -->
+                <div id="references-container" class="border-b border-slate-200 pb-6">
+                    <h3 class="text-xl font-bold mb-4 text-slate-800">4. References (Optional)</h3>
+                    <!-- Reference items will be added here -->
                 </div>
-                <button type="button" id="add-reference-btn" class="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-800">+ Add Reference</button>
-            </fieldset>
-
-             <!-- Submission -->
-            <div class="pt-5">
-                <div class="flex justify-end">
-                    <button type="submit" id="submit-btn" class="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                        Create Poll & Deploy Site
-                    </button>
+                <button type="button" id="add-reference-btn" class="bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors">Add Reference</button>
+                
+                <div class="flex justify-end pt-6 gap-4">
+                    <button type="button" id="cancel-edit-btn" class="hidden bg-slate-200 text-slate-800 font-semibold py-3 px-8 rounded-lg hover:bg-slate-300 transition-colors">Cancel Edit</button>
+                    <button type="submit" id="submit-btn" class="bg-indigo-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-indigo-700 transition-colors shadow-lg hover:shadow-xl">Create Poll</button>
                 </div>
+            </form>
+        </div>
+        
+        <!-- Manage Existing Polls -->
+        <div id="manage-polls-section" class="max-w-4xl mx-auto bg-white p-8 mt-10 rounded-2xl shadow-lg">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">Manage Existing Polls</h2>
+            <button id="load-polls-btn" class="bg-slate-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-slate-700 transition-colors mb-4">Load Existing Polls</button>
+            <div id="poll-list-container" class="space-y-2">
+                <!-- Polls will be listed here -->
             </div>
-        </form>
+        </div>
 
-        <!-- Status Message -->
-        <div id="status-message" class="mt-6 p-4 rounded-md text-sm hidden"></div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-auth.js";
-
-        // IMPORTANT: Replace with your actual Firebase config
+    <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyDU6kTkg1RasSDQyAr1MOXEyJj3dqcZ45k",
-            authDomain: "my-perspective-poll.firebaseapp.com",
-            projectId: "my-perspective-poll",
-            storageBucket: "my-perspective-poll.appspot.com",
-            messagingSenderId: "223184083932",
-            appId: "1:223184083932:web:1e216a3be5990c90710d19"
+          apiKey: "AIzaSyDU6kTkg1RasSDQyAr1MOXEyJj3dqcZ45k",
+          authDomain: "my-perspective-poll.firebaseapp.com",
+          projectId: "my-perspective-poll",
+          storageBucket: "my-perspective-poll.appspot.com",
+          messagingSenderId: "223184083932",
+          appId: "1:223184083932:web:1e216a3be5990c90710d19"
         };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
         
-        // IMPORTANT: Replace with your actual Netlify Build Hook URL
-        const BUILD_HOOK_URL = 'YOUR_BUILD_HOOK_URL_HERE';
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        const loginPanel = document.getElementById('login-panel');
-        const adminPanelContent = document.getElementById('admin-panel-content');
-        const googleSigninBtn = document.getElementById('google-signin-btn');
-        const signoutBtn = document.getElementById('signout-btn');
-        const authError = document.getElementById('auth-error');
+        const loginContainer = document.getElementById('login-container');
+        const adminContainer = document.getElementById('admin-container');
+        const adminLoginBtn = document.getElementById('admin-login-btn');
+        const adminUserInfo = document.getElementById('admin-user-info');
 
         const form = document.getElementById('poll-form');
-        const topicTypeSelector = document.getElementById('topicType');
-        const perspectivesFieldset = document.getElementById('perspectives-fieldset');
-        const pollTimingFieldset = document.getElementById('poll-timing-fieldset');
-        const setClosingTimeCheckbox = document.getElementById('set-closing-time');
-        const closingTimeContainer = document.getElementById('closing-time-container');
-        const perspectivesContainer = document.getElementById('perspectives-container');
-        const addPerspectiveBtn = document.getElementById('add-perspective-btn');
-        const mediaContainer = document.getElementById('media-container');
-        const addMediaBtn = document.getElementById('add-media-btn');
-        const referencesContainer = document.getElementById('references-container');
-        const addReferenceBtn = document.getElementById('add-reference-btn');
+        const formTitle = document.getElementById('form-title');
         const submitBtn = document.getElementById('submit-btn');
-        const statusMessage = document.getElementById('status-message');
-
-        let perspectiveCount = 0;
-
-        // Auth Logic
-        // Security is handled by Firestore Rules. This page only checks if a user is logged in.
-        // Your Firestore Rules should prevent non-admins from writing to the database.
-        onAuthStateChanged(auth, (user) => {
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        
+        auth.onAuthStateChanged(user => {
             if (user) {
-                loginPanel.classList.add('hidden');
-                adminPanelContent.classList.remove('hidden');
+                // User is signed in.
+                loginContainer.style.display = 'none';
+                adminContainer.style.display = 'block';
+                adminUserInfo.innerHTML = `
+                    <p class="text-sm">Signed in as: <strong>${user.displayName}</strong></p>
+                    <button onclick="auth.signOut()" class="text-sm text-indigo-600 hover:underline">Sign Out</button>
+                `;
             } else {
-                loginPanel.classList.remove('hidden');
-                adminPanelContent.classList.add('hidden');
+                // User is signed out.
+                loginContainer.style.display = 'flex';
+                adminContainer.style.display = 'none';
             }
         });
 
-        googleSigninBtn.addEventListener('click', () => {
-            const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider).catch(error => {
-                console.error("Sign in error", error);
-                authError.textContent = `Sign-in failed. Ensure you are an authorized admin. (${error.code})`;
-                authError.classList.remove('hidden');
+        adminLoginBtn.addEventListener('click', () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(error => {
+                console.error("Admin sign-in failed:", error);
+                alert("Sign-in failed. Check the console for more details.");
             });
         });
 
-        signoutBtn.addEventListener('click', () => {
-            signOut(auth);
-        });
+        function addPerspective(data = {}) {
+            const container = document.getElementById('perspectives-container');
+            const perspectiveCount = container.querySelectorAll('.perspective-group').length;
+            const perspectiveKey = String.fromCharCode(65 + perspectiveCount); // A, B, C...
 
-
-        // Form Logic
-        const toggleSections = () => {
-            const isPoll = topicTypeSelector.value === 'poll';
-            perspectivesFieldset.style.display = isPoll ? 'block' : 'none';
-            pollTimingFieldset.style.display = isPoll ? 'block' : 'none';
-        };
-
-        topicTypeSelector.addEventListener('change', toggleSections);
-        setClosingTimeCheckbox.addEventListener('change', () => {
-            closingTimeContainer.style.display = setClosingTimeCheckbox.checked ? 'block' : 'none';
-        });
-
-        const addPerspective = () => {
-            perspectiveCount++;
-            const perspectiveId = `p${perspectiveCount}`;
-            const card = document.createElement('div');
-            card.className = 'dynamic-card bg-slate-50 p-4 rounded-lg border';
-            card.innerHTML = `
-                <h3 class="font-medium">Perspective ${perspectiveCount}</h3>
-                <div class="mt-2 grid grid-cols-1 gap-y-4 gap-x-4 sm:grid-cols-6">
-                    <div class="sm:col-span-3">
-                        <label for="${perspectiveId}-key" class="block text-sm font-medium text-slate-600">Key (e.g., A, B, Pro, Con)</label>
-                        <input type="text" id="${perspectiveId}-key" class="p-key mt-1 block w-full rounded-md border-slate-300 shadow-sm">
-                    </div>
-                    <div class="sm:col-span-3">
-                        <label for="${perspectiveId}-title" class="block text-sm font-medium text-slate-600">Title</label>
-                        <input type="text" id="${perspectiveId}-title" class="p-title mt-1 block w-full rounded-md border-slate-300 shadow-sm">
-                    </div>
-                    <div class="sm:col-span-6">
-                        <label for="${perspectiveId}-text" class="block text-sm font-medium text-slate-600">Summary Text</label>
-                        <textarea id="${perspectiveId}-text" rows="2" class="p-text mt-1 block w-full rounded-md border-slate-300 shadow-sm"></textarea>
-                    </div>
-                    <div class="sm:col-span-6">
-                        <label for="${perspectiveId}-details" class="block text-sm font-medium text-slate-600">Full Details (Optional)</label>
-                        <textarea id="${perspectiveId}-details" rows="4" class="p-details mt-1 block w-full rounded-md border-slate-300 shadow-sm"></textarea>
-                    </div>
-                    <div class="sm:col-span-3">
-                        <label for="${perspectiveId}-color" class="block text-sm font-medium text-slate-600">Color (e.g., green, blue, red)</label>
-                        <input type="text" id="${perspectiveId}-color" class="p-color mt-1 block w-full rounded-md border-slate-300 shadow-sm">
-                    </div>
+            const group = document.createElement('div');
+            group.className = 'perspective-group space-y-4 border border-slate-200 p-4 rounded-lg relative';
+            group.innerHTML = `
+                <h4 class="font-bold text-lg">Perspective ${perspectiveKey}</h4>
+                 <button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-slate-400 hover:text-red-500">&times;</button>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Perspective Title</label>
+                    <input type="text" data-field="title" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm sm:text-sm" value="${data.title || ''}">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Perspective Text</label>
+                    <textarea data-field="text" rows="2" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm sm:text-sm">${data.text || ''}</textarea>
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium text-slate-700">Detailed Explanation (HTML allowed)</label>
+                    <textarea data-field="details" rows="4" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm sm:text-sm">${data.details || ''}</textarea>
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium text-slate-700">Color</label>
+                    <select data-field="color" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm sm:text-sm">
+                        ${['slate','red','orange','amber','yellow','lime','green','emerald','teal','cyan','sky','blue','indigo','violet','purple','fuchsia','pink','rose'].map(c => `<option value="${c}" ${c === (data.color || 'slate') ? 'selected' : ''}>${c.charAt(0).toUpperCase() + c.slice(1)}</option>`).join('')}
+                    </select>
                 </div>
             `;
-            perspectivesContainer.appendChild(card);
-        };
+            container.appendChild(group);
+        }
 
-        const addMedia = () => {
-             const card = document.createElement('div');
-             card.className = 'dynamic-card bg-slate-50 p-4 rounded-lg border';
-             card.innerHTML = `
-                <div class="grid grid-cols-1 gap-y-4 sm:grid-cols-6">
-                    <div class="sm:col-span-2">
-                        <label class="block text-sm font-medium text-slate-600">Type</label>
-                        <select class="m-type mt-1 block w-full rounded-md border-slate-300 shadow-sm">
-                            <option value="image">Image</option>
-                            <option value="video">YouTube Video</option>
-                        </select>
-                    </div>
-                    <div class="sm:col-span-4">
-                        <label class="block text-sm font-medium text-slate-600">URL / Video ID</label>
-                        <input type="text" class="m-url mt-1 block w-full rounded-md border-slate-300 shadow-sm" placeholder="Full image URL or YouTube Video ID">
-                    </div>
+        function addMedia(data = {}) {
+            const container = document.getElementById('media-container');
+            const group = document.createElement('div');
+            group.className = 'media-group grid grid-cols-1 md:grid-cols-3 gap-4 border border-slate-200 p-4 rounded-lg relative';
+            group.innerHTML = `
+                <button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-slate-400 hover:text-red-500">&times;</button>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Media Type</label>
+                    <select data-field="type" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm sm:text-sm">
+                        <option value="image" ${data.type === 'image' ? 'selected' : ''}>Image</option>
+                        <option value="video" ${data.type === 'video' ? 'selected' : ''}>YouTube Video</option>
+                    </select>
                 </div>
-             `;
-             mediaContainer.appendChild(card);
-        };
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-700">URL (for image) or Video ID (for YouTube)</label>
+                    <input type="text" data-field="url" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm sm:text-sm" value="${data.url || data.videoId || ''}">
+                </div>
+            `;
+            container.appendChild(group);
+        }
 
-        const addReference = () => {
-             const card = document.createElement('div');
-             card.className = 'dynamic-card bg-slate-50 p-4 rounded-lg border';
-             card.innerHTML = `
-                <div class="grid grid-cols-1 gap-y-4 sm:grid-cols-6">
-                    <div class="sm:col-span-3">
-                        <label class="block text-sm font-medium text-slate-600">Title</label>
-                        <input type="text" class="r-title mt-1 block w-full rounded-md border-slate-300 shadow-sm">
-                    </div>
-                    <div class="sm:col-span-3">
-                        <label class="block text-sm font-medium text-slate-600">URL</label>
-                        <input type="url" class="r-url mt-1 block w-full rounded-md border-slate-300 shadow-sm">
-                    </div>
+        function addReference(data = {}) {
+            const container = document.getElementById('references-container');
+            const group = document.createElement('div');
+            group.className = 'reference-group grid grid-cols-1 md:grid-cols-2 gap-4 border border-slate-200 p-4 rounded-lg relative';
+            group.innerHTML = `
+                <button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-slate-400 hover:text-red-500">&times;</button>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Reference Title</label>
+                    <input type="text" data-field="title" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm sm:text-sm" value="${data.title || ''}">
                 </div>
-             `;
-             referencesContainer.appendChild(card);
-        };
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Reference URL</label>
+                    <input type="url" data-field="url" required class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm sm:text-sm" value="${data.url || ''}">
+                </div>
+            `;
+            container.appendChild(group);
+        }
         
-        addPerspectiveBtn.addEventListener('click', addPerspective);
-        addMediaBtn.addEventListener('click', addMedia);
-        addReferenceBtn.addEventListener('click', addReference);
+        document.getElementById('add-perspective-btn').addEventListener('click', () => addPerspective());
+        document.getElementById('add-media-btn').addEventListener('click', () => addMedia());
+        document.getElementById('add-reference-btn').addEventListener('click', () => addReference());
+        
+        async function loadPollForEditing(path) {
+            const docRef = db.doc(path);
+            const docSnap = await docRef.get();
+            if (docSnap.exists) {
+                const poll = docSnap.data();
+                const [ , category, , subcategory] = path.split('/');
+                
+                // Reset form
+                resetForm();
+                
+                // Populate basic info
+                document.getElementById('category').value = category;
+                document.getElementById('subcategory').value = subcategory;
+                document.getElementById('title').value = poll.title;
+                document.getElementById('description').value = poll.description;
+                document.getElementById('authorPov').value = poll.authorPov;
+                document.getElementById('more-info').value = poll.moreInfo || '';
+                document.getElementById('hashtags').value = (poll.tags || []).join(', ');
+                document.getElementById('editing-poll-id').value = docSnap.id;
+                document.getElementById('editing-poll-path').value = path;
 
-        // Add one of each by default
-        addPerspective();
-        addMedia();
-        addReference();
+                if (poll.endDate && poll.endDate.toDate) {
+                    const date = poll.endDate.toDate();
+                    // Format to YYYY-MM-DDTHH:MM which is required by datetime-local
+                    const localISOString = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                    document.getElementById('poll-end-date').value = localISOString;
+                } else {
+                    document.getElementById('poll-end-date').value = '';
+                }
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
-            
-            try {
-                const formData = new FormData(form);
-                const topicType = formData.get('topicType');
-
-                const topicData = {
-                    title: formData.get('title'),
-                    description: formData.get('description'),
-                    moreInfo: formData.get('moreInfo'),
-                    authorPov: formData.get('authorPov'),
-                    tags: formData.get('tags').split(',').map(tag => tag.trim()).filter(tag => tag),
-                    timestamp: serverTimestamp(),
-                    topicType: topicType,
-                    pollClosesAt: null, // Default value
-                    perspectives: {},
-                    media: [],
-                    references: [],
-                    likes: 0
-                };
-
-                if (topicType === 'poll' && setClosingTimeCheckbox.checked) {
-                    const closingTimeValue = document.getElementById('closing-time').value;
-                    if (closingTimeValue) {
-                        topicData.pollClosesAt = Timestamp.fromDate(new Date(closingTimeValue));
-                    }
+                // Populate perspectives
+                const perspectivesContainer = document.getElementById('perspectives-container');
+                perspectivesContainer.innerHTML = '<h3 class="text-xl font-bold mb-4 text-slate-800">2. Perspectives</h3>';
+                for (const key in poll.perspectives) {
+                    addPerspective(poll.perspectives[key]);
                 }
                 
-                if (topicType === 'poll') {
-                    document.querySelectorAll('.dynamic-card').forEach(card => {
-                       const keyEl = card.querySelector('.p-key');
-                       if (keyEl) {
-                           const key = keyEl.value.trim();
-                           if (key) {
-                               topicData.perspectives[key] = {
-                                   title: card.querySelector('.p-title').value,
-                                   text: card.querySelector('.p-text').value,
-                                   details: card.querySelector('.p-details').value,
-                                   color: card.querySelector('.p-color').value || 'slate',
-                                   votes: 0
-                               };
-                           }
-                       }
-                    });
-                }
+                // Populate media
+                const mediaContainer = document.getElementById('media-container');
+                 mediaContainer.innerHTML = '<h3 class="text-xl font-bold mb-4 text-slate-800">3. Media (Optional)</h3>';
+                (poll.media || []).forEach(addMedia);
+                
+                // Populate references
+                const referencesContainer = document.getElementById('references-container');
+                referencesContainer.innerHTML = '<h3 class="text-xl font-bold mb-4 text-slate-800">4. References (Optional)</h3>';
+                (poll.references || []).forEach(addReference);
 
-                document.querySelectorAll('.dynamic-card').forEach(card => {
-                    const typeEl = card.querySelector('.m-type');
-                    if(typeEl) {
-                        const type = typeEl.value;
-                        const urlOrId = card.querySelector('.m-url').value.trim();
-                        if(urlOrId) {
-                            if (type === 'image') {
-                                topicData.media.push({ type: 'image', url: urlOrId });
-                            } else if (type === 'video') {
-                                topicData.media.push({ type: 'video', videoId: urlOrId });
+                // Switch to edit mode
+                formTitle.textContent = 'Edit Poll';
+                submitBtn.textContent = 'Update Poll';
+                submitBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                submitBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                cancelEditBtn.classList.remove('hidden');
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                alert("Error: Poll not found.");
+            }
+        }
+        
+        function resetForm() {
+            form.reset();
+            document.getElementById('editing-poll-id').value = '';
+            document.getElementById('editing-poll-path').value = '';
+            document.getElementById('perspectives-container').innerHTML = '<h3 class="text-xl font-bold mb-4 text-slate-800">2. Perspectives</h3>';
+            document.getElementById('media-container').innerHTML = '<h3 class="text-xl font-bold mb-4 text-slate-800">3. Media (Optional)</h3>';
+            document.getElementById('references-container').innerHTML = '<h3 class="text-xl font-bold mb-4 text-slate-800">4. References (Optional)</h3>';
+            document.getElementById('poll-end-date').value = '';
+            addPerspective();
+            formTitle.textContent = 'Create New Poll';
+            submitBtn.textContent = 'Create Poll';
+            submitBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+            submitBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+            cancelEditBtn.classList.add('hidden');
+        }
+
+        cancelEditBtn.addEventListener('click', resetForm);
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const editingPollId = document.getElementById('editing-poll-id').value;
+            const editingPollPath = document.getElementById('editing-poll-path').value;
+
+            const pollData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                authorPov: document.getElementById('authorPov').value,
+                moreInfo: document.getElementById('more-info').value,
+                likes: editingPollId ? firebase.firestore.FieldValue.increment(0) : 0, // Don't reset likes on edit
+                perspectives: {},
+                media: [],
+                references: [],
+                tags: document.getElementById('hashtags').value.split(',').map(tag => tag.trim()).filter(tag => tag)
+            };
+            
+            const endDateValue = document.getElementById('poll-end-date').value;
+            if (endDateValue) {
+                pollData.endDate = firebase.firestore.Timestamp.fromDate(new Date(endDateValue));
+            }
+
+            if (!editingPollId) {
+                pollData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+            }
+
+            const perspectiveGroups = document.querySelectorAll('.perspective-group');
+            perspectiveGroups.forEach((group, index) => {
+                const key = `Perspective ${String.fromCharCode(65 + index)}`;
+                pollData.perspectives[key] = {
+                    title: group.querySelector('[data-field="title"]').value,
+                    text: group.querySelector('[data-field="text"]').value,
+                    details: group.querySelector('[data-field="details"]').value,
+                    color: group.querySelector('[data-field="color"]').value,
+                    votes: 0 // Votes are handled separately and should not be reset on edit
+                };
+            });
+
+            const mediaGroups = document.querySelectorAll('.media-group');
+            mediaGroups.forEach(group => {
+                const type = group.querySelector('[data-field="type"]').value;
+                const urlOrId = group.querySelector('[data-field="url"]').value;
+                const mediaItem = { type };
+                if (type === 'image') mediaItem.url = urlOrId;
+                else if (type === 'video') mediaItem.videoId = urlOrId;
+                pollData.media.push(mediaItem);
+            });
+
+            const referenceGroups = document.querySelectorAll('.reference-group');
+            referenceGroups.forEach(group => {
+                pollData.references.push({
+                    title: group.querySelector('[data-field="title"]').value,
+                    url: group.querySelector('[data-field="url"]').value
+                });
+            });
+
+            const category = document.getElementById('category').value;
+            const subcategory = document.getElementById('subcategory').value;
+
+            try {
+                if (editingPollId) {
+                    const docRef = db.doc(editingPollPath);
+                    // Get existing votes to preserve them
+                    const existingDoc = await docRef.get();
+                    if(existingDoc.exists) {
+                        const existingPerspectives = existingDoc.data().perspectives;
+                        for (const key in pollData.perspectives) {
+                            if (existingPerspectives[key]) {
+                                pollData.perspectives[key].votes = existingPerspectives[key].votes || 0;
                             }
                         }
                     }
-                });
-
-
-                 document.querySelectorAll('.dynamic-card').forEach(card => {
-                    const titleEl = card.querySelector('.r-title');
-                    const urlEl = card.querySelector('.r-url');
-                    if (titleEl && urlEl) {
-                        const title = titleEl.value.trim();
-                        const url = urlEl.value.trim();
-                        if (title && url) {
-                            topicData.references.push({ title, url });
-                        }
-                    }
-                });
-
-                // Save to Firestore
-                const category = formData.get('category').trim();
-                const subcategory = formData.get('subcategory').trim();
-                const topicsCollectionRef = collection(db, 'categories', category, 'subcategories', subcategory, 'topics');
-                await addDoc(topicsCollectionRef, topicData);
-
-                setStatus('success', 'Poll saved to database! Triggering Netlify deploy...');
-
-                // Trigger Netlify build hook
-                const response = await fetch(BUILD_HOOK_URL, { method: 'POST' });
-                if (!response.ok) {
-                    throw new Error('Failed to trigger Netlify build.');
+                    await docRef.update(pollData);
+                    alert("Poll updated successfully!");
+                } else {
+                    const pollRef = db.collection('categories').doc(category).collection('subcategories').doc(subcategory).collection('topics');
+                    await pollRef.add(pollData);
+                    await db.collection('categories').doc(category).set({ icon: '✨' }, { merge: true });
+                    await db.collection('categories').doc(category).collection('subcategories').doc(subcategory).set({}, { merge: true });
+                    alert("Poll created successfully!");
                 }
-                
-                setStatus('success', 'Deploy triggered successfully! Your new page will be live in a few minutes.');
-                form.reset();
-                toggleSections();
-                setClosingTimeCheckbox.checked = false;
-                closingTimeContainer.style.display = 'none';
-
+                resetForm();
+                loadExistingPolls();
 
             } catch (error) {
-                console.error("Error:", error);
-                setStatus('error', `An error occurred: ${error.message}`);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Poll & Deploy Site';
+                console.error("Error saving poll:", error);
+                alert("Error saving poll. Check the console for details.");
             }
         });
+        
+        async function loadExistingPolls() {
+            const btn = document.getElementById('load-polls-btn');
+            const container = document.getElementById('poll-list-container');
+            btn.textContent = 'Loading...';
+            btn.disabled = true;
+            container.innerHTML = '';
+            
+            try {
+                 const allPolls = [];
+                 const categoriesSnapshot = await db.collection('categories').get();
+                 for (const categoryDoc of categoriesSnapshot.docs) {
+                     const subcategoriesSnapshot = await categoryDoc.ref.collection('subcategories').get();
+                     for (const subcategoryDoc of subcategoriesSnapshot.docs) {
+                         const topicsSnapshot = await subcategoryDoc.ref.collection('topics').get();
+                         topicsSnapshot.forEach(topicDoc => {
+                             allPolls.push({
+                                 id: topicDoc.id,
+                                 path: topicDoc.ref.path,
+                                 ...topicDoc.data()
+                             });
+                         });
+                     }
+                 }
 
-        function setStatus(type, message) {
-            statusMessage.textContent = message;
-            statusMessage.className = `mt-6 p-4 rounded-md text-sm ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
-            statusMessage.classList.remove('hidden');
+                 allPolls.sort((a,b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
+
+                 if (allPolls.length === 0) {
+                     container.innerHTML = '<p class="text-slate-500">No polls found.</p>';
+                 } else {
+                     allPolls.forEach(poll => {
+                         const pollEl = document.createElement('div');
+                         pollEl.className = 'flex justify-between items-center p-3 bg-slate-50 rounded-lg';
+                         
+                         let tagInfo = '<p class="text-xs text-red-500">No tags found</p>';
+                         if(poll.tags && poll.tags.length > 0) {
+                              tagInfo = `<p class="text-xs text-slate-500 truncate max-w-xs">${poll.tags.join(', ')}</p>`;
+                         }
+
+                         let actions = `
+                             <button onclick="loadPollForEditing('${poll.path}')" class="bg-blue-500 text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-600 text-sm">Edit</button>
+                         `;
+
+                         if(!poll.tags || poll.tags.length === 0) {
+                            actions += `<button onclick="generateAndSaveTags(this, '${poll.path}', '${poll.title.replace(/'/g, "\\'")}', '${poll.description.replace(/'/g, "\\'")}')" class="ml-2 bg-yellow-500 text-white font-semibold py-1 px-3 rounded-lg hover:bg-yellow-600 text-sm">Generate Tags</button>`;
+                         }
+
+
+                         pollEl.innerHTML = `
+                             <div>
+                                 <p class="font-semibold">${poll.title}</p>
+                                 ${tagInfo}
+                             </div>
+                             <div class="flex-shrink-0">
+                                 ${actions}
+                             </div>
+                         `;
+                         container.appendChild(pollEl);
+                     });
+                 }
+            } catch (error) {
+                console.error("Error loading polls:", error);
+                container.innerHTML = '<p class="text-red-500">Could not load polls.</p>';
+            } finally {
+                btn.textContent = 'Reload Polls';
+                btn.disabled = false;
+            }
         }
+        
+        async function generateAndSaveTags(button, path, title, description) {
+            button.textContent = 'Generating...';
+            button.disabled = true;
+            
+            const prompt = `Based on the following poll title and description, generate 5-7 relevant, comma-separated keywords or hashtags (without the # symbol). Title: "${title}". Description: "${description}"`;
+            
+            try {
+                // You will need to replace this with a call to your AI model
+                // For now, this is a placeholder
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+                
+                // SIMULATED AI RESPONSE
+                const generatedKeywords = "politics, election, government, india, democracy";
+                // In a real implementation, this would be:
+                // const aiResponse = await callYourAIModel(prompt);
+                // const generatedKeywords = aiResponse.text;
+
+                const tags = generatedKeywords.split(',').map(t => t.trim()).filter(Boolean);
+
+                await db.doc(path).update({ tags });
+                
+                alert("Tags generated and saved successfully!");
+
+            } catch(error) {
+                 console.error("Error generating tags:", error);
+                 alert("Could not generate tags. See console for details.");
+            } finally {
+                loadExistingPolls(); // Refresh the list
+            }
+        }
+        
+        document.getElementById('load-polls-btn').addEventListener('click', loadExistingPolls);
+        // Add one perspective field by default on page load
+        addPerspective();
+
     </script>
 </body>
 </html>
-
